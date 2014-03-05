@@ -31,6 +31,7 @@ function getSession($set_guest=true)
             session_name($name); // set session name
             session_start(); // resume session
         }
+        $_SESSION['last_access'] = time();
     }
 }
 
