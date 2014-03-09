@@ -88,7 +88,7 @@ Finally you can quit the mysql prompt by entering
 
 ##Configuring init.php
 
-** In order for this application to work you must create an 'init.php' file inside the main directory of this project. **
+**In order for this application to work you must create an 'init.php' file inside the main directory of this project.**
 
 This file does not exist in the repo and is ignored by git because this file contains sensitive information to connect to you database.
 Inside 'init.php' you must define the following in php
@@ -122,7 +122,7 @@ define('DB_PASS', 'password');
 
 After all of these steps, you will need to setup a virtual host with Apache to point to the 'pub' directory of your local copy of the repo.
 
-** Note ** Depending on what OS you are running, how to set up 'vhosts' with apache varies. I suggest Googling your OS and Setting up apache vhosts.
+**Note** Depending on what OS you are running, how to set up 'vhosts' with apache varies. I suggest Googling your OS and Setting up apache vhosts.
 
 However the contents of the vhost can be quite simple. Here is an example vhost for 'local.vending.com'
 
@@ -160,7 +160,7 @@ To check if you have this Module enter this command
 
 This will dump the currently loaded modules in Apache. If you see 'rewrite' in those settings, you should be good to go.
 
-** NOTE ** MAMP and XXAMP have trouble are reportedly bad at handling overriding even with 'mod_rewrite' enabled.
+**NOTE** MAMP and XXAMP have trouble are reportedly bad at handling overriding even with 'mod_rewrite' enabled.
 There are work arounds if you run into issues using MAMP, or XXAMP.
 (Though it is my personal 2cents that it's better to run Apache and Mysql locally anyway)
 
