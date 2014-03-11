@@ -1,7 +1,7 @@
 {
-    "require":
-    {
+    "require": {
         "slim/slim": "2.*",
-        "twig/twig": "1.*" 
+        "slim/views": "0.*",
+        "twig/twig": "1.*"
     }
 }

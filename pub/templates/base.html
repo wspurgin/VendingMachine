@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        {% block head %}
+            <link rel="stylesheet" href="/css/bootstrap.min.css" />
+            <link rel="stylesheet" href="/css/vending.css"/>
+            <title>{% block title %}{{ page_title }} - Vending{% endblock %}</title>
+        {% endblock %}
+    </head>
+    <body>
+        <div class="container wrapper">
+            {% block nav %}
+                {% include "sidebar.html" %}
+            {% endblock %}
+            {% block page_header %}
+            <div class="content-header">
+                <h1>{{ page_title }}</h1>
+            </div>
+            {% endblock %}
+            {% block content %}{% endblock %}
+            <div id="push"></div>
+        </div>
+        <div id="footer">
+            {% block footer %}
+                <div class="container">
+                    <p class="text-muted">Developed by Will Spurgin, 2014 Vending Machine Project</p>
+                </div>
+            {% endblock %}
+        </div>
+    </body>
+    {% block scripts %}
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+        <script src="/js/bootstrap.min.js"></script>
+    {% endblock %}
+</html>

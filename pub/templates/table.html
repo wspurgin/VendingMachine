@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                {% for key in keys %}
+                    <th>{{ key }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+                <tr>
+                    {% for data in row %}
+                        {% if loop.first %}
+                        <td><a href="{{ href ~ '/' ~ data }}">{{ data }}</a></td>
+                        {% else %}
+                        <td>{{ data }}</td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
+

@@ -60,6 +60,7 @@ CREATE TABLE Team_Members(
 
 CREATE TABLE Products(
     `id` int(11) AUTO_INCREMENT PRIMARY KEY,
+    `sku` varchar(128) NOT NULL DEFAULT "",
     `name` varchar(50) NOT NULL,
     `vendor` varchar(30) NOT NULL,
     `cost` double(11, 2) UNSIGNED NOT NULL DEFAULT 0.00

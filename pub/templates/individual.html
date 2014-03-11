@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% import "macros.html" as macros %}
+
+{% block content %}
+    <form id="object_form" role="form" data-href="{{ href }}">
+        {% for key in keys %}
+            <div class="form-group">
+                <label for="{{ key }}"> {{ key }}</label>
+                {{ macros.input(null, key, attribute(row, key)) }}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-success">Update</button>
+    </form>
+{% endblock %}
+
+{% block scripts %}
+{{ parent() }}
+<script src="/js/individual.js"></script>
+{% endblock %}
