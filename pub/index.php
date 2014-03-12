@@ -26,6 +26,7 @@ $app->get('/groups', 'getGroups');
 $app->post('/groups', 'addGroup');
 $app->get('/groups/:id', 'getGroup');
 $app->put('/groups/:id', 'updateGroup');
+$app->delete('/groups/:id', 'deleteGroup');
 
 $app->get('/', function() use ($app) {
     $app->render('index.html', array('page_title' => "Home"));
@@ -58,8 +59,21 @@ function getGroups()
         $db = getConnection();
         $stmt = $db->query($sql);
         $groups = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $sql = "SELECT `COLUMN_NAME` 
+        FROM `INFORMATION_SCHEMA`.`COLUMNS` 
+        WHERE `TABLE_SCHEMA`='vending' 
+        AND `TABLE_NAME`='groups'";
+
+        $stmt = $db->query($sql);
+        $col_names = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $keys;
+
+        foreach ($col_names as $col) {
+            $keys[] = $col['COLUMN_NAME'];
+        }
         
-        $app->render('table.html', array('keys' => array('Id', 'Name'),
+        $app->render('table.html', array('keys' => $keys,
             'rows' => $groups, 'page_title' => "Groups",
             'href' => $app->request->getUrl()."/groups")
         );
@@ -84,20 +98,23 @@ function addGroup()
         $group = json_decode($body);
 
         $db = getConnection();
-        $stmt->prepare($sql);
-        $stmt->bindParam('name', $group['name']);
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam('name', $group->name);
         $stmt->execute();
 
-        $last_id = $db->lastInsetedId();
+        $last_id = $db->lastInsertId();
+        $response['id'] = $last_id;
 
-        getGroup($last_id); 
+        $response['success'] = true;
+        $response['message'] = "Group updated sucessfully";
     }
     catch (Exception $e)
     {
-        // while still debugging
+        $response['success'] = false;
         $response['message'] = $e->getMessage();
-        $app->render('error.html', $response);
     }
+
+    echo json_encode($response);
 }
 
 function getGroup($id)
@@ -160,6 +177,36 @@ function updateGroup($id)
         $response['message'] = $e->getMessage();
     }
 
+    echo json_encode($response);
+}
+
+function deleteGroup($id)
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "DELETE FROM `Groups` WHERE `id`=:id";
+    $response;
+   
+    try
+    {
+        $body = $app->request->getBody();
+        $user = json_decode($body);
+
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+
+        $response['success'] = true;
+        $response['message'] = "Group deleted sucessfully";
+
+        //give base url in response
+        $response['href'] = $app->request->getUrl() . '/groups';
+    }
+    catch(Exception $e)
+    {
+        $response['success'] = false;
+        $response['message'] = $e->getMessage();
+    }
     echo json_encode($response);
 }
 

@@ -23,6 +23,10 @@
             {% endfor %}
         </tbody>
     </table>
+    {% include "addform.html" %}
 
 {% endblock %}
-
+{% block scripts %}
+    {{ parent() }}
+    <script src="/js/addform.js"></script>
+{% endblock %}

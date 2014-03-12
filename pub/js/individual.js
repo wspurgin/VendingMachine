@@ -23,11 +23,29 @@ form.submit(function(event) {
     });
 });
 
-function formToJSON(form) {
-    var inputs = {}
-    $.each(form.serializeArray(), function(i, input) {
-        inputs[input.name] = input.value;
-    });
-
-    return JSON.stringify(inputs);
-}
+$("#delete-entry").click(function(event) {
+    var proceed = confirm("Are you sure you want to delete this entry?");
+    var href = $(this).data('href');
+    event.preventDefault();
+    if (proceed) {
+        $.ajax({
+            type: 'DELETE',
+            url: href,
+            dataType: 'json',
+            success: function(data) {
+                if (data.success) {
+                    console.log(data.href);
+                    window.location.replace(data.href);
+                } else {
+                    alert("Could not delete this entry. See console log for details");
+                    console.log(data.message);
+                };
+            },
+            error: function(data) {
+                alert('Errors occured during your request.');
+            }
+        });
+    } else {
+        // do
+    };
+});
