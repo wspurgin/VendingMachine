@@ -150,3 +150,24 @@ CREATE TABLE Group_Permissisons(
         REFERENCES Permissions(`id`)
         ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=INNODB DEFAULT CHARSET=utf8;
+
+CREATE TABLE User_Permissions(
+    `user_id` int(11),
+    `permission_id` int(11),
+
+        CONSTRAINT pk_user_permission_id
+    PRIMARY KEY (`user_id`, `permission_id`),
+
+    INDEX(`user_id`),
+    INDEX(`permission_id`),
+
+    CONSTRAINT user_permission_fk_group
+    FOREIGN KEY (`user_id`)
+        REFERENCES Users(`id`)
+        ON UPDATE CASCADE ON DELETE CASCADE,
+
+    CONSTRAINT user_permission_fk_permission
+    FOREIGN KEY (`permission_id`)
+        REFERENCES Permissions(`id`)
+        ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=INNODB DEFAULT CHARSET=utf8;
