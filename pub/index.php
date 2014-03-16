@@ -22,18 +22,26 @@ $app->view->parserOptions = array(
 
 $app->view->parserExtensions = array(new \Slim\Views\TwigExtension());
 
+// Group Routes
 $app->get('/groups', 'getGroups');
 $app->post('/groups', 'addGroup');
 $app->get('/groups/:id', 'getGroup');
 $app->put('/groups/:id', 'updateGroup');
 $app->delete('/groups/:id', 'deleteGroup');
 
+// Permission Routes
+$app->get('/permissions', 'getPermissions');
+
+// Home page route
 $app->get('/', function() use ($app) {
     $app->render('index.html', array('page_title' => "Home"));
 });
 
 $app->run();
 
+// helper functions
+
+// create a connection to the database
 function getConnection()
 {
     $dbhost = DB_HOST;
@@ -50,37 +58,62 @@ function getConnection()
     return $db;
 }
 
+// get the permissions of a specific user
+// (good for verifying a session for specific content)
+function getUserPermissions($id)
+{
+    $sql = "SELECT `permission_id`, `description`, `code_name`
+    FROM `User_Permissions` INNER JOIN (`Permissions`) ON
+    (`User_Permissions`.`permission_id`=`Permissions`.`id`)
+    WHERE `user_id`=:id";
+
+    try
+    {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(":id", $id);
+        $stmt->execute();
+
+        $permissions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $permissions;
+    }
+    catch (Exception $e)
+    {
+        // throw the error for calling functions
+        throw $e;
+    }
+}
+
+// end of helper functions
+
 function getGroups()
 {
     $app = \Slim\Slim::getInstance();
     $sql = "SELECT * FROM Groups";
+    $response;
     try
     {
         $db = getConnection();
         $stmt = $db->query($sql);
         $groups = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT `COLUMN_NAME` 
-        FROM `INFORMATION_SCHEMA`.`COLUMNS` 
-        WHERE `TABLE_SCHEMA`='vending' 
-        AND `TABLE_NAME`='groups'";
-
-        $stmt = $db->query($sql);
-        $col_names = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $keys;
-
-        foreach ($col_names as $col) {
-            $keys[] = $col['COLUMN_NAME'];
+        if(empty($groups))
+            $response['page_title'] = "No Content";
+        else
+        {
+            $keys = array_keys($groups[0]); //get keys from first 'group'
+            $response['keys'] = $keys;
+            $response['rows'] = $groups;
+            $response['page_title'] = "Groups";
+            $response['href'] = $app->request->getUrl()."/groups";
         }
-        
-        $app->render('table.html', array('keys' => $keys,
-            'rows' => $groups, 'page_title' => "Groups",
-            'href' => $app->request->getUrl()."/groups")
-        );
+        $app->render('table.html', $response);
     }
     catch (Exception $e)
     {
         // while still debugging
+        $response['page_title'] = "Errors";
         $response['message'] = $e->getMessage();
         $app->render('error.html', $response);
     }
@@ -208,6 +241,39 @@ function deleteGroup($id)
         $response['message'] = $e->getMessage();
     }
     echo json_encode($response);
+}
+
+function getPermissions()
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "SELECT * FROM `Permissions`";
+    $response;
+
+    try
+    {
+        $db = getConnection();
+        $stmt = $db->query($sql);
+        $permissions = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if(empty($permissions))
+            $response['page_title'] = "No Content";
+        else
+        {
+            $keys = array_keys($permissions[0]); //get keys from first 'group'
+            $response['keys'] = $keys;
+            $response['rows'] = $permissions;
+            $response['page_title'] = "Permissions";
+            $response['href'] = $app->request->getUrl()."/permissions";
+            $app->render('table.html', $response);
+        }
+    }
+    catch(Exception $e)
+    {
+        // while still debugging
+        $response['page_title'] = "Errors";
+        $response['message'] = $e->getMessage();
+        $app->render('error.html', $response);
+    }
 }
 
 ?>
