@@ -79,7 +79,7 @@
 }
 
 #footer {
-  position: absolute;
+  margin-top: 20px;
   bottom: 0;
   width: 100%;
   padding-left: 250px;

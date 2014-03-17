@@ -31,6 +31,10 @@ $app->delete('/groups/:id', 'deleteGroup');
 
 // Permission Routes
 $app->get('/permissions', 'getPermissions');
+$app->post('/permissions', 'addPermission');
+$app->get('/permissions/:id', 'getPermission');
+$app->put('/permissions/:id', 'updatePermission');
+
 
 // Home page route
 $app->get('/', function() use ($app) {
@@ -90,7 +94,7 @@ function getGroups()
 {
     $app = \Slim\Slim::getInstance();
     $sql = "SELECT * FROM Groups";
-    $response;
+
     try
     {
         $db = getConnection();
@@ -124,6 +128,7 @@ function addGroup()
 {
     $app = \Slim\Slim::getInstance();
     $sql = "INSERT INTO `Groups`(`name`) VALUES (:name)";
+
     try
     {
         # get the request
@@ -139,7 +144,7 @@ function addGroup()
         $response['id'] = $last_id;
 
         $response['success'] = true;
-        $response['message'] = "Group updated sucessfully";
+        $response['message'] = "Group added sucessfully";
     }
     catch (Exception $e)
     {
@@ -162,7 +167,7 @@ function getGroup($id)
         $stmt->execute();
 
         $group = $stmt->fetch(PDO::FETCH_ASSOC);
-        if(!isset($group))
+        if(empty($group))
             $app->halt(404, "This is not the page you are looking for...");
         else
         {
@@ -179,6 +184,7 @@ function getGroup($id)
     catch (Exception $e)
     {
         // while still debugging
+        $response['page_title'] = "Errors";
         $response['message'] = $e->getMessage();
         $app->render('error.html', $response);
     }
@@ -188,16 +194,15 @@ function updateGroup($id)
 {
     $app = \Slim\Slim::getInstance();
     $sql = "UPDATE `Groups` SET `name`=:name WHERE `id`=:id";
-    $response;
 
     try
     {
         $body = $app->request->getBody();
-        $user = json_decode($body);
+        $group = json_decode($body);
 
         $db = getConnection();
         $stmt = $db->prepare($sql);
-        $stmt->bindParam(':name', $user->name);
+        $stmt->bindParam(':name', $group->name);
         $stmt->bindParam(':id', $id);
         $stmt->execute();
 
@@ -217,12 +222,9 @@ function deleteGroup($id)
 {
     $app = \Slim\Slim::getInstance();
     $sql = "DELETE FROM `Groups` WHERE `id`=:id";
-    $response;
    
     try
     {
-        $body = $app->request->getBody();
-        $user = json_decode($body);
 
         $db = getConnection();
         $stmt = $db->prepare($sql);
@@ -247,7 +249,6 @@ function getPermissions()
 {
     $app = \Slim\Slim::getInstance();
     $sql = "SELECT * FROM `Permissions`";
-    $response;
 
     try
     {
@@ -274,6 +275,131 @@ function getPermissions()
         $response['message'] = $e->getMessage();
         $app->render('error.html', $response);
     }
+}
+
+function addPermission()
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "INSERT INTO `Permissions`(`description`, `code_name`)
+    VALUES (:description, :code_name)";
+
+    try
+    {
+        # get the request
+        $body = $app->request->getBody();
+        $permission = json_decode($body);
+
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':description', $permission->description);
+        $stmt->bindParam(':code_name', $permission->code_name); 
+        $stmt->execute();
+
+        $last_id = $db->lastInsertId();
+        $response['id'] = $last_id;
+
+        $response['success'] = true;
+        $response['message'] = "Permission added sucessfully";
+    }
+    catch (Exception $e)
+    {
+        $response['success'] = false;
+        $response['message'] = $e->getMessage();
+    }
+    echo json_encode($response);
+}
+
+function getPermission($id)
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "SELECT * FROM `Permissions` WHERE id=:id";
+    try
+    {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+
+        $permission = $stmt->fetch(PDO::FETCH_ASSOC);
+        if(empty($permission))
+            $app->halt(404, "This is not the page you are looking for...");
+        else
+        {
+            $keys = array_keys($permission);
+            $response['keys'] = $keys;
+            $response['row'] = $permission;
+            $name = $permission['code_name'];
+            $response['page_title'] = "Permissions: $name";
+            $response['href'] = $app->request->getUrl()."/permissions/".$id;
+            
+            $app->render('individual.html', $response);
+        }
+    }
+    catch (Exception $e)
+    {
+        // while still debugging
+        $response['page_title'] = "Errors";
+        $response['message'] = $e->getMessage();
+        $app->render('error.html', $response);
+    }
+}
+
+function updatePermission($id)
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "UPDATE `Permissions` SET `description`=:description,
+    `code_name`=:code_name WHERE `id`=:id";
+
+    try
+    {
+        $body = $app->request->getBody();
+        $permission = json_decode($body);
+
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':description', $permission->description);
+        $stmt->bindParam(':code_name', $permission->code_name);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+
+        $response['success'] = true;
+        $response['message'] = "Group updated sucessfully";
+    }
+    catch(Exception $e)
+    {
+        $response['success'] = false;
+        $response['message'] = $e->getMessage();
+    }
+
+    echo json_encode($response);
+}
+
+function deletePermission($id)
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "DELETE FROM `Permissions` WHERE `id`=:id";
+    $response;
+   
+    try
+    {
+
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+
+        $response['success'] = true;
+        $response['message'] = "Group deleted sucessfully";
+
+        //give base url in response
+        $response['href'] = $app->request->getUrl() . '/permissions';
+    }
+    catch(Exception $e)
+    {
+        $response['success'] = false;
+        $response['message'] = $e->getMessage();
+    }
+    echo json_encode($response);
 }
 
 ?>
