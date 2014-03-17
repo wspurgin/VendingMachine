@@ -1,3 +1,6 @@
 {% macro input(type, name, value) %}
 	<input class="form-control" type="{{ type|default('text') }}" id="{{ name }}" name="{{ name }}" value="{{ value|default('') }}" />
 {% endmacro %}
+{% macro immutable(type, name, value) %}
+	<input disabled class="form-control" type="{{ type|default('text') }}" id="{{ name }}" name="{{ name }}" value="{{ value|default('') }}" />
+{% endmacro %}

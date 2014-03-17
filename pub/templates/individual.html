@@ -6,7 +6,11 @@
         {% for key in keys %}
             <div class="form-group">
                 <label for="{{ key }}"> {{ key }}</label>
-                {{ macros.input(null, key, attribute(row, key)) }}
+                {% if loop.first %}
+                	{{ macros.immutable(null, key, attribute(row, key)) }}
+                {% else %}
+                	{{ macros.input(null, key, attribute(row, key)) }}
+                {% endif %}
             </div>
         {% endfor %}
         <button type="submit" class="btn btn-success">Update</button>

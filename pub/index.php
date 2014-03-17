@@ -34,7 +34,18 @@ $app->get('/permissions', 'getPermissions');
 $app->post('/permissions', 'addPermission');
 $app->get('/permissions/:id', 'getPermission');
 $app->put('/permissions/:id', 'updatePermission');
+$app->delete('/permissions/:id', 'deletePermission');
 
+// Group_Permissions Routes
+
+# TODO: what's the plan for references? Foreign Keys, just hyperlink?
+
+// Machine Routes
+$app->get('/machines', 'getMachines');
+$app->post('/machines', 'addMachine');
+$app->get('/machines/:id', 'getMachine');
+$app->put('/machines/:id', 'updateMachine');
+$app->delete('/machines/:id', 'deleteMachine');
 
 // Home page route
 $app->get('/', function() use ($app) {
@@ -260,7 +271,7 @@ function getPermissions()
             $response['page_title'] = "No Content";
         else
         {
-            $keys = array_keys($permissions[0]); //get keys from first 'group'
+            $keys = array_keys($permissions[0]); //get keys from first 'permission'
             $response['keys'] = $keys;
             $response['rows'] = $permissions;
             $response['page_title'] = "Permissions";
@@ -363,7 +374,7 @@ function updatePermission($id)
         $stmt->execute();
 
         $response['success'] = true;
-        $response['message'] = "Group updated sucessfully";
+        $response['message'] = "Permission updated sucessfully";
     }
     catch(Exception $e)
     {
@@ -389,10 +400,167 @@ function deletePermission($id)
         $stmt->execute();
 
         $response['success'] = true;
-        $response['message'] = "Group deleted sucessfully";
+        $response['message'] = "Permission deleted sucessfully";
 
         //give base url in response
         $response['href'] = $app->request->getUrl() . '/permissions';
+    }
+    catch(Exception $e)
+    {
+        $response['success'] = false;
+        $response['message'] = $e->getMessage();
+    }
+    echo json_encode($response);
+}
+
+function getMachines()
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "SELECT * FROM `Machines`";
+
+    try
+    {
+        $db = getConnection();
+        $stmt = $db->query($sql);
+        $machines = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $keys;
+        if(empty($machines))
+            $response['page_title'] = "No Content";
+        else
+        {
+            $keys = array_keys($machines[0]); //get keys from first 'machine'
+            $response['keys'] = $keys;
+            $response['rows'] = $machines;
+            $response['page_title'] = "Machines";
+            $response['href'] = $app->request->getUrl()."/machines";
+        }
+        $app->render('table.html', $response);
+    }
+    catch (Exception $e)
+    {
+        // while still debugging
+        $response['page_title'] = "Errors";
+        $response['message'] = $e->getMessage();
+        $app->render('error.html', $response);
+    }
+
+}
+
+function addMachine()
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "INSERT INTO `Machines`(`machine_location`) VALUES (:machine_location)";
+
+    try
+    {
+        # get the request
+        $body = $app->request->getBody();
+        $machine = json_decode($body);
+
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':machine_location', $machine->machine_location);
+        $stmt->execute();
+
+        $last_id = $db->lastInsertId();
+        $response['id'] = $last_id;
+
+        $response['success'] = true;
+        $response['message'] = "Machine added sucessfully";
+    }
+    catch (Exception $e)
+    {
+        $response['success'] = false;
+        $response['message'] = $e->getMessage();
+    }
+
+    echo json_encode($response);
+}
+
+function getMachine($id)
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "SELECT * FROM `Machines` WHERE id=:id";
+    try
+    {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+
+        $machine = $stmt->fetch(PDO::FETCH_ASSOC);
+        if(empty($machine))
+            $app->halt(404, "This is not the page you are looking for...");
+        else
+        {
+            $keys = array_keys($machine);
+            $response['keys'] = $keys;
+            $response['row'] = $machine;
+            $name = $machine['machine_location'];
+            $response['page_title'] = "Group: $name";
+            $response['href'] = $app->request->getUrl()."/machines/".$id;
+            
+            $app->render('individual.html', $response);
+        }
+    }
+    catch (Exception $e)
+    {
+        // while still debugging
+        $response['page_title'] = "Errors";
+        $response['message'] = $e->getMessage();
+        $app->render('error.html', $response);
+    }  
+}
+
+function updateMachine($id)
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "UPDATE `Machines` SET `machine_location`=:machine_location
+    WHERE `id`=:id";
+
+    try
+    {
+        $body = $app->request->getBody();
+        $machine = json_decode($body);
+
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':machine_location', $machine->machine_location);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+
+        $response['success'] = true;
+        $response['message'] = "Machine updated sucessfully";
+    }
+    catch(Exception $e)
+    {
+        $response['success'] = false;
+        $response['message'] = $e->getMessage();
+    }
+
+    echo json_encode($response);
+}
+
+function deleteMachine($id)
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "DELETE FROM `Machines` WHERE `id`=:id";
+    $response;
+   
+    try
+    {
+
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+
+        $response['success'] = true;
+        $response['message'] = "Machine deleted sucessfully";
+
+        //give base url in response
+        $response['href'] = $app->request->getUrl() . '/machines';
     }
     catch(Exception $e)
     {
