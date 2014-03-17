@@ -498,7 +498,7 @@ function getMachine($id)
             $response['keys'] = $keys;
             $response['row'] = $machine;
             $name = $machine['machine_location'];
-            $response['page_title'] = "Group: $name";
+            $response['page_title'] = "Machine: $name";
             $response['href'] = $app->request->getUrl()."/machines/".$id;
             
             $app->render('individual.html', $response);
