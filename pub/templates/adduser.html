@@ -2,7 +2,6 @@
 
 <form id="add_form" role="form" data-href="{{ href }}">
     {% for key in keys %}
-    	{% if not loop.first %}
         <div class="form-group">
             <label for="{{ key }}"> {{ key }}</label>
             {% if 'password' in key %}
@@ -11,7 +10,6 @@
             	{{ macros.input(null, key, null) }}
             {% endif %}
         </div>
-        {% endif %}
     {% endfor %}
     <button type="submit" class="btn btn-success">Add</button>
 </form>

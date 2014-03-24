@@ -6,8 +6,16 @@
         {% for key in keys %}
             <div class="form-group">
                 <label for="{{ key }}"> {{ key }}</label>
-                {% if loop.first %}
+                {% if 'id' in key %}
                 	{{ macros.immutable(null, key, attribute(row, key)) }}
+                {% elseif 'password' in key %}
+                    <div class="push">
+                        {{ macros.button_link(href ~ '/reset', "PUT", key, "Reset Password") }}
+                    </div>
+                {% elseif 'balance' in key %}
+                    <div class="push">
+                        {{ macros.input_number(0, null, key, attribute(row, key)) }}
+                    </div>
                 {% else %}
                 	{{ macros.input(null, key, attribute(row, key)) }}
                 {% endif %}

@@ -47,6 +47,20 @@ $app->get('/machines/:id', 'getMachine');
 $app->put('/machines/:id', 'updateMachine');
 $app->delete('/machines/:id', 'deleteMachine');
 
+// User Routes
+$app->get('/users', 'getUsers');
+$app->post('/users', 'addUser');
+$app->get('/users/:id', 'getUser');
+$app->put('/users/:id', 'updateUser');
+$app->delete('/users/:id', 'deleteUser');
+$app->get('/users/:id/change', function($id) use ($app) {
+    $response['page_title'] = "Password change: ".$id;
+    $response['href'] = $app->request->getUrl()."/users/".$id."/change";
+    $app->render('password_change.html', $response);
+});
+$app->put('/users/:id/change', 'changePassword');
+$app->put('/users/:id/reset', 'resetPassword');
+
 // Home page route
 $app->get('/', function() use ($app) {
     $app->render('index.html', array('page_title' => "Home"));
@@ -71,6 +85,14 @@ function getConnection()
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     return $db;
+}
+
+function session()
+{
+    // false for disabling guest session, 'user_id' is the Session key
+    // that has to exist in order to be a valid session.
+    $good_session = getSession(false) && validateSession('user_id');
+
 }
 
 // get the permissions of a specific user
@@ -99,6 +121,45 @@ function getUserPermissions($id)
     }
 }
 
+// function for getting the attribure names for a given relation in SQL
+function getRelationKeys($relation)
+{
+    $dbname = DB_NAME;
+
+    $sql = "SELECT `COLUMN_NAME` 
+    FROM `INFORMATION_SCHEMA`.`COLUMNS` 
+    WHERE `TABLE_SCHEMA`='$dbname' 
+    AND `TABLE_NAME`='$relation'";
+
+    try
+    {
+        $db = getConnection();
+        $stmt = $db->query($sql);
+        $col_names = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($col_names as $col)
+            $keys[] = $col['COLUMN_NAME'];
+        return $keys;
+    }
+    catch (Exception $e)
+    {
+        // throw the error for calling functions
+        throw $e;
+    }
+}
+
+function string_gen($length=10)
+{
+    try
+    {
+        return substr(md5(rand()), 0, $length);
+    }
+    catch (Exception $e)
+    {
+        throw $e;
+    }
+}
+
 // end of helper functions
 
 function getGroups()
@@ -114,7 +175,10 @@ function getGroups()
 
         $keys;
         if(empty($groups))
+        {
             $response['page_title'] = "No Content";
+            $response['keys'] = getRelationKeys('groups');
+        }
         else
         {
             $keys = array_keys($groups[0]); //get keys from first 'group'
@@ -268,7 +332,10 @@ function getPermissions()
         $permissions = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         if(empty($permissions))
+        {
             $response['page_title'] = "No Content";
+            $response['keys'] = getRelationKeys('permissions');
+        }
         else
         {
             $keys = array_keys($permissions[0]); //get keys from first 'permission'
@@ -389,7 +456,6 @@ function deletePermission($id)
 {
     $app = \Slim\Slim::getInstance();
     $sql = "DELETE FROM `Permissions` WHERE `id`=:id";
-    $response;
    
     try
     {
@@ -426,7 +492,10 @@ function getMachines()
 
         $keys;
         if(empty($machines))
+        {
             $response['page_title'] = "No Content";
+            $response['keys'] = getRelationKeys('machines');
+        }
         else
         {
             $keys = array_keys($machines[0]); //get keys from first 'machine'
@@ -546,7 +615,6 @@ function deleteMachine($id)
 {
     $app = \Slim\Slim::getInstance();
     $sql = "DELETE FROM `Machines` WHERE `id`=:id";
-    $response;
    
     try
     {
@@ -561,6 +629,247 @@ function deleteMachine($id)
 
         //give base url in response
         $response['href'] = $app->request->getUrl() . '/machines';
+    }
+    catch(Exception $e)
+    {
+        $response['success'] = false;
+        $response['message'] = $e->getMessage();
+    }
+    echo json_encode($response);
+}
+
+function getUsers()
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "SELECT `id`, `name`, `email`, `group_id`, `balance` FROM `Users`";
+
+    try
+    {
+        $db = getConnection();
+        $stmt = $db->query($sql);
+        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if(empty($users))
+        {
+            $response['page_title'] = "No Content";
+            $response['keys'] = getRelationKeys('users');
+        }
+        else
+        {
+            $keys = array_keys($users[0]); //get keys from first 'user'
+            $keys[] = "password"; // append password to the end
+            $response['keys'] = $keys;
+            $response['rows'] = $users;
+            $response['page_title'] = "Users";
+        }
+        $response['href'] = $app->request->getUrl()."/users";
+        $app->render('table_user.html', $response);
+    }
+    catch (Exception $e)
+    {
+        // while still debugging
+        $response['page_title'] = "Errors";
+        $response['message'] = $e->getMessage();
+        $app->render('error.html', $response);
+    }
+
+}
+
+function addUser()
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "INSERT INTO `Users`(`id`, `password`, `name`, `email`, `group_id`,
+    `balance`) VALUES (:id, :password, :name, :email, :group_id, :balance)";
+
+    try
+    {
+        $body = $app->request->getBody();
+        $user = json_decode($body);
+
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':id', $user->id);
+        $stmt->bindParam(':password', password_hash($user->password, PASSWORD_DEFAULT));
+        $stmt->bindParam(':name', $user->name);
+        $stmt->bindParam(':email', $user->email);
+        $stmt->bindParam(':group_id', $user->group_id);
+        $stmt->bindParam(':balance', $user->balance);
+        $stmt->execute();
+
+        $response['id'] = $user->id;
+
+        $response['success'] = true;
+        $response['message'] = "User added sucessfully";
+
+    }
+    catch (Exception $e)
+    {
+        // while still debugging
+        $response['success'] = false;
+        $response['message'] = $e->getMessage();
+    }
+    echo json_encode($response);
+}
+
+function getUser($id)
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "SELECT * FROM `Users` WHERE id=:id";
+    try
+    {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        if(empty($user))
+            $app->halt(404, "This is not the page you are looking for...");
+        else
+        {
+            $user['password'] = '';
+            $keys = array_keys($user);
+            $response['keys'] = $keys;
+            $response['row'] = $user;
+            $name = $user['name'];
+            $response['page_title'] = "User: $name";
+            $response['href'] = $app->request->getUrl()."/users/".$id;
+            
+            $app->render('individual.html', $response);
+        }
+    }
+    catch (Exception $e)
+    {
+        // while still debugging
+        $response['page_title'] = "Errors";
+        $response['message'] = $e->getMessage();
+        $app->render('error.html', $response);
+    }  
+
+}
+
+function updateUser($id)
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "UPDATE `Users` SET `name`=:name, `email`=:email,
+    `balance`=:balance WHERE `id`=:id";
+
+    try
+    {
+        $body = $app->request->getBody();
+        $user = json_decode($body);
+
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':name', $user->name);
+        $stmt->bindParam(':email', $user->email);
+        $stmt->bindParam(':balance', $user->balance);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+
+        $response['success'] = true;
+        $response['message'] = "User updated sucessfully";
+    }
+    catch(Exception $e)
+    {
+        $response['success'] = false;
+        $response['message'] = $e->getMessage();
+    }
+
+    echo json_encode($response);
+}
+
+function deleteUser($id)
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "DELETE FROM `Users` WHERE `id`=:id";
+
+    try
+    {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+
+        $response['success'] = true;
+        $response['message'] = "User deleted sucessfully";
+
+        //give base url in response
+        $response['href'] = $app->request->getUrl() . '/users';
+    }
+    catch(Exception $e)
+    {
+        $response['success'] = false;
+        $response['message'] = $e->getMessage();
+    }
+    echo json_encode($response);
+}
+
+function changePassword($id)
+{
+    $app = \Slim\Slim::getInstance();
+
+    // if(!(session() && validateSession('user_id', $id)))
+    //     $app->halt(404);
+    try
+    {
+        $body = $app->request->getBody();
+        $password = json_decode($body);
+
+        $db = getConnection();
+
+        // verify user has correct password
+        $sql = "SELECT `password` FROM `Users` WHERE `id`=:id";
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if(empty($user) || password_hash($password->old_password, PASSWORD_DEFAULT) != $user['password'])
+        {
+            $response['success'] = false;
+            $response['message'] = "Invalid password. Action refused";
+        }
+        else
+        {
+            $sql = "UPDATE `Users` SET `password`=:password, WHERE `id`=:id";
+
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam(':id', $id);
+            $stmt->bindParam(':password', password_hash($password->new_password, PASSWORD_DEFAULT));
+            $stmt->execute();
+
+            $response['success'] = true;
+            $response['message'] = "User password updated sucessfully";
+        }
+    }
+    catch(Exception $e)
+    {
+        $response['success'] = false;
+        $response['message'] = $e->getMessage();
+    }
+    echo json_encode($response);
+}
+
+// NOT FINISHED TODO:: set up reset
+function resetPassword($id)
+{
+    $app = \Slim\Slim::getInstance();
+
+    // if(!(session() && (validateSession('user_id', $id) || validateSession('change_user', true))))
+    //     $app->halt(404);
+    try
+    {
+        $new_password = string_gen();
+        $sql = "UPDATE `Users` SET `password`=:password WHERE `id`=:id";
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(":password", password_hash($new_password, PASSWORD_DEFAULT));
+        $stmt->bindParam(":id", $id);
+        $stmt->execute();
+        
+        $response['success'] = true;
+        $response['message'] = "New password '$new_password' set for user: $id";
     }
     catch(Exception $e)
     {

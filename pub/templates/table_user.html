@@ -1,0 +1,32 @@
+{% extends "table.html" %}
+
+{% block table %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                {% for key in keys %}
+                	{% if "password" not in key %}
+                    	<th>{{ key }}</th>
+                	{% endif %}
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %}
+                <tr>
+                    {% for data in row %}
+                        {% if loop.first %}
+                        <td><a href="{{ href ~ '/' ~ data }}">{{ data }}</a></td>
+                        {% else %}
+                        <td>{{ data }}</td>
+                        {% endif %}
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+
+{% block addform %}
+	{% include "adduser.html" %}
+{% endblock %}

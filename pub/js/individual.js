@@ -11,6 +11,7 @@ form.submit(function(event) {
         data: formToJSON($(this)),
         success: function(data) {
             if (data.success) {
+                alert(data.message);
                 window.location.replace(href);
             } else {
                 alert("Could not update this entry. See console log for details");
@@ -48,4 +49,24 @@ $("#delete-entry").click(function(event) {
     } else {
         // do
     };
+});
+
+$("#button-link").click(function(event) {
+    var href = $(this).data('href');
+    var type = $(this).data('action');
+    event.preventDefault();
+    $.ajax({
+        type: type,
+        url: href,
+        dataType: 'json',
+        success: function(data) {
+            if (data.success)
+                alert(data.message);
+            else
+                alert("Could not reset password: " + data.message);
+        },
+        error: function(data) {
+            console.log(data);
+        }
+    })
 });
