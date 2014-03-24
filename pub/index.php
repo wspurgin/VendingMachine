@@ -61,6 +61,12 @@ $app->get('/users/:id/change', function($id) use ($app) {
 $app->put('/users/:id/change', 'changePassword');
 $app->put('/users/:id/reset', 'resetPassword');
 
+$app->get('/products', 'getProducts');
+$app->post('/products', 'addProduct');
+$app->get('/products/:id', 'getProduct');
+$app->put('/products/:id', 'updateProduct');
+$app->delete('/products/:id', 'deleteProduct');
+
 // Home page route
 $app->get('/', function() use ($app) {
     $app->render('index.html', array('page_title' => "Home"));
@@ -870,6 +876,176 @@ function resetPassword($id)
         
         $response['success'] = true;
         $response['message'] = "New password '$new_password' set for user: $id";
+    }
+    catch(Exception $e)
+    {
+        $response['success'] = false;
+        $response['message'] = $e->getMessage();
+    }
+    echo json_encode($response);
+}
+
+function getProducts()
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "SELECT * FROM `Products`";
+
+    try
+    {
+        $db = getConnection();
+        $stmt = $db->query($sql);
+        $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $keys;
+        if(empty($products))
+        {
+            $response['page_title'] = "No Content";
+            $response['keys'] = getRelationKeys('products');
+        }
+        else
+        {
+            $keys = array_keys($products[0]); //get keys from first 'product'
+            $response['keys'] = $keys;
+            $response['rows'] = $products;
+            $response['page_title'] = "Products";
+            $response['href'] = $app->request->getUrl()."/products";
+        }
+        $app->render('table.html', $response);
+    }
+    catch (Exception $e)
+    {
+        // while still debugging
+        $response['page_title'] = "Errors";
+        $response['message'] = $e->getMessage();
+        $app->render('error.html', $response);
+    }
+
+}
+
+function addProduct()
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "INSERT INTO `Products`(`sku`, `name`, `vendor`, `cost`) VALUES (:sku, :name, :vendor, :cost)";
+
+    try
+    {
+        # get the request
+        $body = $app->request->getBody();
+        $product = json_decode($body);
+            if(empty($product))
+                throw new Exception("Invalid json '$body'", 1);
+                
+
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':sku', $product->sku);
+        $stmt->bindParam(':name', $product->name);
+        $stmt->bindParam(':vendor', $product->vendor);
+        $stmt->bindParam(':cost', $product->cost);
+        $stmt->execute();
+
+        $last_id = $db->lastInsertId();
+        $response['id'] = $last_id;
+
+        $response['success'] = true;
+        $response['message'] = "Machine added sucessfully";
+    }
+    catch (Exception $e)
+    {
+        $response['success'] = false;
+        $response['message'] = $e->getMessage();
+    }
+
+    echo json_encode($response);
+}
+
+function getProduct($id)
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "SELECT * FROM `Products` WHERE `id`=:id";
+
+    try
+    {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        $product = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if(empty($product))
+            throw new Exception("No content", 1);
+        else
+        {
+            $keys = array_keys($product);
+            $response['keys'] = $keys;
+            $response['row'] = $product;
+            $name = $product['name'];
+            $response['page_title'] = "Product: $name";
+            $response['href'] = $app->request->getUrl()."/products/".$id;
+            
+            $app->render('individual.html', $response);
+        }
+    }
+    catch (Exception $e)
+    {
+        // while still debugging
+        $response['page_title'] = "Errors";
+        $response['message'] = $e->getMessage();
+        $app->render('error.html', $response);
+    }
+}
+
+function updateProduct($id)
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "UPDATE `Products` SET `sku`=:sku, `name`=:name, `vendor`=:vendor,
+    `cost`=:cost WHERE `id`=:id";
+
+    try
+    {
+        $body = $app->request->getBody();
+        $product = json_decode($body);
+        if(empty($product))
+            throw new Exception("Invalid json: '$body'", 1);
+
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':sku', $product->sku);
+        $stmt->bindParam(':name', $product->name);
+        $stmt->bindParam(':vendor', $product->vendor);
+        $stmt->bindParam(':cost', $product->cost);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+
+        $response['success'] = true;
+        $response['message'] = "Product updated sucessfully";
+    }
+    catch(Exception $e)
+    {
+        $response['success'] = false;
+        $response['message'] = $e->getMessage();
+    }
+
+    echo json_encode($response);
+}
+
+function deleteProduct($id)
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "DELETE FROM `Products` WHERE `id`=:id";
+
+    try
+    {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+
+        $response['success'] = true;
+        $response['message'] = "Product deleted sucessfully";
+
+        //give base url in response
+        $response['href'] = $app->request->getUrl() . '/products';
     }
     catch(Exception $e)
     {
