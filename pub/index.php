@@ -61,11 +61,19 @@ $app->get('/users/:id/change', function($id) use ($app) {
 $app->put('/users/:id/change', 'changePassword');
 $app->put('/users/:id/reset', 'resetPassword');
 
+// Product Routes
 $app->get('/products', 'getProducts');
 $app->post('/products', 'addProduct');
 $app->get('/products/:id', 'getProduct');
 $app->put('/products/:id', 'updateProduct');
 $app->delete('/products/:id', 'deleteProduct');
+
+// Team Routes
+$app->get('/teams', 'getTeams');
+$app->post('/teams', 'addTeam');
+$app->get('/teams/:id', 'getTeam');
+$app->put('/teams/:id', 'updateTeam');
+$app->delete('/teams/:id', 'deleteTeam');
 
 // Home page route
 $app->get('/', function() use ($app) {
@@ -1055,4 +1063,176 @@ function deleteProduct($id)
     echo json_encode($response);
 }
 
-?>
+function getTeams()
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "SELECT * FROM `Teams`";
+
+    try
+    {
+        $db = getConnection();
+        $stmt = $db->query($sql);
+        $teams = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $keys;
+        if(empty($teams))
+        {
+            $response['page_title'] = "No Content";
+            $response['keys'] = getRelationKeys('teams');
+        }
+        else
+        {
+            $keys = array_keys($teams[0]); //get keys from first 'team'
+            $response['keys'] = $keys;
+            $response['rows'] = $teams;
+            $response['page_title'] = "Teams";
+            $response['href'] = $app->request->getUrl()."/teams";
+        }
+        $app->render('table.html', $response);
+    }
+    catch (Exception $e)
+    {
+        // while still debugging
+        $response['page_title'] = "Errors";
+        $response['message'] = $e->getMessage();
+        $app->render('error.html', $response);
+    }
+
+}
+
+function addTeam()
+{
+    $app = \Slim\Slim::getInstance();
+    $app->contentType('application/json');
+    $sql = "INSERT INTO `Teams`(`team_name`, `class`, `expiration_date`,
+        `team_balance`)
+    VALUES (:team_name, :class, :expiration_date, :team_balance)";
+
+    try
+    {
+        # get the request
+        $body = $app->request->getBody();
+        $team = json_decode($body);
+            if(empty($team))
+                throw new Exception("Invalid json '$body'", 1);
+
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':team_name', $team->team_name);
+        $stmt->bindParam(':class', $team->class);
+        $stmt->bindParam(':expiration_date', $team->expiration_date);
+        $stmt->bindParam(':team_balance', $team->team_balance);
+        $stmt->execute();
+
+        $last_id = $db->lastInsertId();
+        $response['id'] = $last_id;
+
+        $response['success'] = true;
+        $response['message'] = "Team added sucessfully";
+    }
+    catch (Exception $e)
+    {
+        $response['success'] = false;
+        $response['message'] = $e->getMessage();
+    }
+
+    echo json_encode($response);
+}
+
+function getTeam($id)
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "SELECT * FROM `Teams` WHERE `id`=:id";
+
+    try
+    {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        $team = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if(empty($team))
+            throw new Exception("No content", 1);
+        else
+        {
+            $keys = array_keys($team);
+            $response['keys'] = $keys;
+            $response['row'] = $team;
+            $name = $team['team_name'];
+            $response['page_title'] = "Teams: $name";
+            $response['href'] = $app->request->getUrl()."/teams/".$id;
+            
+            $app->render('individual.html', $response);
+        }
+    }
+    catch (Exception $e)
+    {
+        // while still debugging
+        $response['page_title'] = "Errors";
+        $response['message'] = $e->getMessage();
+        $app->render('error.html', $response);
+    }
+}
+
+function updateTeam($id)
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "UPDATE `Teams` SET `team_name`=:team_name, `class`=:class,
+    `expiration_date`=:expiration_date, `team_balance`=:team_balance
+    WHERE `id`=:id";
+
+    try
+    {
+        $body = $app->request->getBody();
+        $team = json_decode($body);
+        if(empty($team))
+            throw new Exception("Invalid json: '$body'", 1);
+
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':team_name', $team->team_name);
+        $stmt->bindParam(':class', $team->class);
+        $stmt->bindParam(':expiration_date', $team->expiration_date);
+        $stmt->bindParam(':team_balance', $team->team_balance);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+
+        $response['success'] = true;
+        $response['message'] = "Team updated sucessfully";
+    }
+    catch(Exception $e)
+    {
+        $response['success'] = false;
+        $response['message'] = $e->getMessage();
+    }
+
+    echo json_encode($response);
+}
+
+function deleteTeam($id)
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "DELETE FROM `Teams` WHERE `id`=:id";
+
+    try
+    {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+
+        $response['success'] = true;
+        $response['message'] = "Team deleted sucessfully";
+
+        //give base url in response
+        $response['href'] = $app->request->getUrl() . '/teams';
+    }
+    catch(Exception $e)
+    {
+        $response['success'] = false;
+        $response['message'] = $e->getMessage();
+    }
+    echo json_encode($response);
+}
+

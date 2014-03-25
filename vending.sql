@@ -31,7 +31,7 @@ CREATE TABLE Teams(
     `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY,
     `team_name` varchar(30) NOT NULL,
     `class` varchar(30) NOT NULL,
-    `expiration` DATE NOT NULL,
+    `expiration_date` DATE NOT NULL,
     `team_balance` double(11, 2) UNSIGNED NOT NULL DEFAULT 0.00
 
 ) ENGINE=INNODB DEFAULT CHARSET=utf8;

@@ -7,6 +7,8 @@
             <label for="{{ key }}"> {{ key }}</label>
             {% if 'password' in key %}
             	{{ macros.input('password', key, null) }}
+            {% elseif 'date' in key %}
+                {{ macros.input('date', key, null) }}
             {% else %}
             	{{ macros.input(null, key, null) }}
             {% endif %}

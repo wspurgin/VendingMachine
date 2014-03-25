@@ -13,9 +13,9 @@
                         {{ macros.button_link(href ~ '/reset', "PUT", key, "Reset Password") }}
                     </div>
                 {% elseif 'balance' in key %}
-                    <div class="push">
                         {{ macros.input_number(0, null, key, attribute(row, key)) }}
-                    </div>
+                {% elseif 'date' in key %}
+                    {{ macros.input('date', key, attribute(row, key)) }}
                 {% else %}
                 	{{ macros.input(null, key, attribute(row, key)) }}
                 {% endif %}
