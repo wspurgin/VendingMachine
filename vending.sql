@@ -130,7 +130,7 @@ CREATE TABLE Permissions(
     
 ) ENGINE=INNODB DEFAULT CHARSET=utf8;
 
-CREATE TABLE Group_Permissisons(
+CREATE TABLE Group_Permissions(
     `group_id` int(11),
     `permission_id` int(11),
     

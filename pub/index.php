@@ -1,7 +1,44 @@
 <?php
 
-require('../vendor/autoload.php');
-require_once('../init.php');
+/*
+require_once(__DIR__ . '/../../vendor/autoload.php');
+require_once(__DIR__ . '/../../lib/config.php');
+
+
+session_cache_limiter(false);
+
+
+$app = new \Slim\Slim(array('templates.path' => 'templates',));
+$app->log->setEnabled(true);
+
+$app->view(new \Slim\Views\Twig());
+$app->view->parserOptions = array(
+    'charset' => 'utf-8',
+    'cache' => realpath('templates/cache'),
+    'auto_reload' => true,
+    'strict_variables' => false,
+    'autoescape' => true
+);
+
+$app->view->parserExtensions = array(new \Slim\Views\TwigExtension());
+
+
+// get all the bootstraped routes from config
+foreach ($ROUTES as $route) {
+    if($route->type == Route::GET)
+        $app->get($route->url, $route->callable);
+    elseif ($route->type == Route::POST)
+        $app->post($route->url, $route->callable);
+    elseif ($route->type == Route::PUT)
+        $app->put($route->url, $route->callable);
+    elseif ($route->type == Route::DELETE)
+        $app->delete($route->url, $route->callable);
+    else
+        $app->log("Unsupported route type for '$route->type', on Route $route");
+}
+
+$app->run();
+*/
 require_once('../lib/session.php');
 require_once('../lib/password.php');
 
@@ -75,6 +112,12 @@ $app->get('/teams/:id', 'getTeam');
 $app->put('/teams/:id', 'updateTeam');
 $app->delete('/teams/:id', 'deleteTeam');
 
+// Team Routes
+$app->get('/logs', 'getLogs');
+$app->delete('/logs/:id', 'deleteLog');
+
+$app->get('/groups/:id/permissions', 'getGroupPermissions');
+
 // Home page route
 $app->get('/', function() use ($app) {
     $app->render('index.html', array('page_title' => "Home"));
@@ -106,7 +149,6 @@ function session()
     // false for disabling guest session, 'user_id' is the Session key
     // that has to exist in order to be a valid session.
     $good_session = getSession(false) && validateSession('user_id');
-
 }
 
 // get the permissions of a specific user
@@ -199,8 +241,8 @@ function getGroups()
             $response['keys'] = $keys;
             $response['rows'] = $groups;
             $response['page_title'] = "Groups";
-            $response['href'] = $app->request->getUrl()."/groups";
         }
+        $response['href'] = $app->request->getUrl()."/groups";
         $app->render('table.html', $response);
     }
     catch (Exception $e)
@@ -210,7 +252,6 @@ function getGroups()
         $response['message'] = $e->getMessage();
         $app->render('error.html', $response);
     }
-
 }
 
 function addGroup()
@@ -356,9 +397,9 @@ function getPermissions()
             $response['keys'] = $keys;
             $response['rows'] = $permissions;
             $response['page_title'] = "Permissions";
-            $response['href'] = $app->request->getUrl()."/permissions";
-            $app->render('table.html', $response);
         }
+        $response['href'] = $app->request->getUrl()."/permissions";
+        $app->render('table.html', $response);
     }
     catch(Exception $e)
     {
@@ -516,8 +557,8 @@ function getMachines()
             $response['keys'] = $keys;
             $response['rows'] = $machines;
             $response['page_title'] = "Machines";
-            $response['href'] = $app->request->getUrl()."/machines";
         }
+        $response['href'] = $app->request->getUrl()."/machines";
         $app->render('table.html', $response);
     }
     catch (Exception $e)
@@ -527,7 +568,6 @@ function getMachines()
         $response['message'] = $e->getMessage();
         $app->render('error.html', $response);
     }
-
 }
 
 function addMachine()
@@ -686,7 +726,6 @@ function getUsers()
         $response['message'] = $e->getMessage();
         $app->render('error.html', $response);
     }
-
 }
 
 function addUser()
@@ -759,7 +798,6 @@ function getUser($id)
         $response['message'] = $e->getMessage();
         $app->render('error.html', $response);
     }  
-
 }
 
 function updateUser($id)
@@ -916,8 +954,8 @@ function getProducts()
             $response['keys'] = $keys;
             $response['rows'] = $products;
             $response['page_title'] = "Products";
-            $response['href'] = $app->request->getUrl()."/products";
         }
+        $response['href'] = $app->request->getUrl()."/products";
         $app->render('table.html', $response);
     }
     catch (Exception $e)
@@ -927,7 +965,6 @@ function getProducts()
         $response['message'] = $e->getMessage();
         $app->render('error.html', $response);
     }
-
 }
 
 function addProduct()
@@ -1086,8 +1123,8 @@ function getTeams()
             $response['keys'] = $keys;
             $response['rows'] = $teams;
             $response['page_title'] = "Teams";
-            $response['href'] = $app->request->getUrl()."/teams";
         }
+        $response['href'] = $app->request->getUrl()."/teams";
         $app->render('table.html', $response);
     }
     catch (Exception $e)
@@ -1097,7 +1134,6 @@ function getTeams()
         $response['message'] = $e->getMessage();
         $app->render('error.html', $response);
     }
-
 }
 
 function addTeam()
@@ -1236,3 +1272,223 @@ function deleteTeam($id)
     echo json_encode($response);
 }
 
+function getLogs()
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "SELECT * FROM `Logs`";
+
+    try
+    {
+        $db = getConnection();
+        $stmt = $db->query($sql);
+        $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        $keys;
+        if(empty($logs))
+        {
+            $response['page_title'] = "No Content";
+            $response['keys'] = getRelationKeys('logs');
+        }
+        else
+        {
+            $keys = array_keys($logs[0]); //get keys from first 'log'
+            $response['keys'] = $keys;
+            $response['rows'] = $logs;
+            $response['page_title'] = "Logs";
+        }
+        $response['href'] = $app->request->getUrl()."/logs";
+        $app->render('table.html', $response);
+    }
+    catch (Exception $e)
+    {
+        // while still debugging
+        $response['page_title'] = "Errors";
+        $response['message'] = $e->getMessage();
+        $app->render('error.html', $response);
+    }
+}
+
+function addLog()
+{
+    $app = \Slim\Slim::getInstance();
+    $app->contentType('application/json');
+    $sql = "INSERT INTO `Logs`(`user_id`, `product_id`, `machine_id`,
+        `date_purchased`)
+    VALUES (:user_id, :product_id, :machine_id, :date_purchased)";
+
+    try
+    {
+        # get the request
+        $body = $app->request->getBody();
+        $log = json_decode($body);
+            if(empty($log))
+                throw new Exception("Invalid json '$body'", 1);
+
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':user_id', $log->user_id);
+        $stmt->bindParam(':product_id', $log->product_id);
+        $stmt->bindParam(':machine_id', $log->machine_id);
+        $stmt->bindParam(':date_purchased', $log->date_purchased);
+        $stmt->execute();
+
+        $last_id = $db->lastInsertId();
+        $response['id'] = $last_id;
+
+        $response['success'] = true;
+        $response['message'] = "Log added sucessfully";
+    }
+    catch (Exception $e)
+    {
+        $response['success'] = false;
+        $response['message'] = $e->getMessage();
+    }
+
+    echo json_encode($response);
+}
+
+function getLog($id)
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "SELECT * FROM `Logs` WHERE `id`=:id";
+
+    try
+    {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+        $log = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if(empty($log))
+            throw new Exception("No content", 1);
+        else
+        {
+            $keys = array_keys($log);
+            $response['keys'] = $keys;
+            $response['row'] = $log;
+            $name = $log['id'] + ':' + $log['date_purchased'];
+            $response['page_title'] = "Logs: $name";
+            $response['href'] = $app->request->getUrl()."/logs/".$id;
+            
+            $app->render('individual.html', $response);
+        }
+    }
+    catch (Exception $e)
+    {
+        // while still debugging
+        $response['page_title'] = "Errors";
+        $response['message'] = $e->getMessage();
+        $app->render('error.html', $response);
+    }
+}
+
+function updateLog($id)
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "UPDATE `Logs` SET `user_id`=:user_id, `product_id`=:product_id,
+    `machine_id`=:machine_id, `date_purchased`=:date_purchased
+    WHERE `id`=:id";
+
+    try
+    {
+        $body = $app->request->getBody();
+        $log = json_decode($body);
+        if(empty($log))
+            throw new Exception("Invalid json: '$body'", 1);
+
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':user_id', $log->user_id);
+        $stmt->bindParam(':product_id', $log->product_id);
+        $stmt->bindParam(':machine_id', $log->machine_id);
+        $stmt->bindParam(':date_purchased', $log->date_purchased);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+
+        $response['success'] = true;
+        $response['message'] = "Log updated sucessfully";
+    }
+    catch(Exception $e)
+    {
+        $response['success'] = false;
+        $response['message'] = $e->getMessage();
+    }
+
+    echo json_encode($response);
+}
+
+function deleteLog($id)
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "DELETE FROM `Logs` WHERE `id`=:id";
+
+    try
+    {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+
+        $response['success'] = true;
+        $response['message'] = "Log deleted sucessfully";
+
+        //give base url in response
+        $response['href'] = $app->request->getUrl() . '/logs';
+    }
+    catch(Exception $e)
+    {
+        $response['success'] = false;
+        $response['message'] = $e->getMessage();
+    }
+    echo json_encode($response);
+}
+
+function getGroupPermissions($id)
+{
+    $app = \Slim\Slim::getInstance();
+    $sql = "SELECT g.`name` AS `group`, p.`description` AS `permission`
+    FROM `Groups` g
+    INNER JOIN `Group_Permissions` pg ON (g.`id`=pg.`group_id`)
+    INNER JOIN `Permissions` p ON (pg.`permission_id`=p.`id`)
+    WHERE g.`id`=:id";
+
+    try
+    {
+        $db = getConnection();
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam(':id', $id);
+        $stmt->execute();
+
+        $group = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        if(empty($group))
+            $app->halt(404, "This is not the page you are looking for...");
+        else
+        {
+            $stmt = $db->query("SELECT `id` AS `value`, `description` AS `name`
+            FROM `Permissions`");
+            
+            $many = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $response['many'] = $many;
+
+            $keys = array_keys($group[0]); // keys from first row
+            $response['keys'] = $keys;
+            $response['rows'] = $group;
+            
+            $name = $group[0]['group'];
+            $response['ref_herf'] = $app->request->getUrl()."/groups/$id";
+            $response['page_title'] = "Group: $name - Permissions";
+            $response['name'] = $name;
+            $response['href'] = $app->request->getUrl()."/groups/$id/permissions";
+            
+            $app->render('one_to_many.html', $response);
+        }
+    }
+    catch (Exception $e)
+    {
+        // while still debugging
+        $response['page_title'] = "Errors";
+        $response['message'] = $e->getMessage();
+        $app->render('error.html', $response);
+    }
+}
