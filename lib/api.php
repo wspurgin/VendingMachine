@@ -192,7 +192,7 @@ Class Api
 
     // end of helper functions
 
-    public function getGroups($json_request=false)
+    public function getGroups($json_request=true)
     {
         $app = \Slim\Slim::getInstance();
         $sql = "SELECT * FROM Groups";
@@ -246,13 +246,13 @@ Class Api
         echo json_encode($response);
     }
 
-    public function getGroup($id, $json_request=false)
+    public function getGroup($id, $json_request=true)
     {
         $app = \Slim\Slim::getInstance();
         $sql = "SELECT * FROM Groups WHERE id=:id";
         try
         {
-            $group = $this->db->select($sql, array(":id" => $id));
+            $group = $this->db->select($sql, array(":id" => $id), false);
             if($json_request)
                 echo json_encode($group);
             else
@@ -277,14 +277,12 @@ Class Api
 
         try
         {
+            # get the request
             $body = $app->request->getBody();
             $group = json_decode($body);
+            if(empty($group))
+                throw new Exception("Invalid JSON '$body'", 1);
 
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':name', $group->name);
-            $stmt->bindParam(':id', $id);
-            $stmt->execute();
 
             $this->db->update($sql, array(
                 ":name" => $group->name,
@@ -312,10 +310,7 @@ Class Api
         try
         {
 
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':id', $id);
-            $stmt->execute();
+            $this->db->delete($sql, array(':id' => $id));
 
             $response['success'] = true;
             $response['message'] = "Group deleted sucessfully";
@@ -331,7 +326,7 @@ Class Api
         echo json_encode($response);
     }
 
-    public function getPermissions($json_request=false)
+    public function getPermissions($json_request=true)
     {
         $app = \Slim\Slim::getInstance();
         $sql = "SELECT * FROM `Permissions`";
@@ -356,6 +351,7 @@ Class Api
         }
     }
 
+    // only meant to be json api request.
     public function addPermission()
     {
         $app = \Slim\Slim::getInstance();
@@ -367,14 +363,15 @@ Class Api
             # get the request
             $body = $app->request->getBody();
             $permission = json_decode($body);
+            if(empty($permission))
+                throw new Exception("Invalid JSON '$body'", 1);
 
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':description', $permission->description);
-            $stmt->bindParam(':code_name', $permission->code_name); 
-            $stmt->execute();
+            $args = array(
+                ":description" => $permission->description,
+                ":code_name" => $permission->code_name
+            );
 
-            $last_id = $db->lastInsertId();
+            $last_id = $this->db->insert($sql, $args);
             $response['id'] = $last_id;
 
             $response['success'] = true;
@@ -388,41 +385,30 @@ Class Api
         echo json_encode($response);
     }
 
-    public function getPermission($id)
+    public function getPermission($id, $json_request=true)
     {
         $app = \Slim\Slim::getInstance();
         $sql = "SELECT * FROM `Permissions` WHERE id=:id";
         try
         {
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':id', $id);
-            $stmt->execute();
-
-            $permission = $stmt->fetch(PDO::FETCH_ASSOC);
-            if(empty($permission))
-                $app->halt(404, "This is not the page you are looking for...");
+            $permission = $this->db->select($sql, array(":id" => $id), false);
+            if($json_request)
+                echo json_encode($permission);
             else
-            {
-                $keys = array_keys($permission);
-                $response['keys'] = $keys;
-                $response['row'] = $permission;
-                $name = $permission['code_name'];
-                $response['page_title'] = "Permissions: $name";
-                $response['href'] = $app->request->getUrl()."/permissions/".$id;
-                
-                $app->render('individual.html', $response);
-            }
+                return $permission;
         }
         catch (Exception $e)
         {
-            // while still debugging
-            $response['page_title'] = "Errors";
             $response['message'] = $e->getMessage();
-            $app->render('error.html', $response);
+            // while still debugging
+            if($json_request)
+                echo json_encode($response);
+            else
+                throw $e;
         }
     }
 
+    // only meant to be json api request.
     public function updatePermission($id)
     {
         $app = \Slim\Slim::getInstance();
@@ -433,13 +419,16 @@ Class Api
         {
             $body = $app->request->getBody();
             $permission = json_decode($body);
+            if(empty($permission))
+                throw new Exception("Invalid JSON '$body'", 1);
 
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':description', $permission->description);
-            $stmt->bindParam(':code_name', $permission->code_name);
-            $stmt->bindParam(':id', $id);
-            $stmt->execute();
+            $args = array(
+                ":description" => $permission->description,
+                ":code_name" => $permission->code_name,
+                ":id" => $id
+            );
+
+            $this->db->update($sql, $args);
 
             $response['success'] = true;
             $response['message'] = "Permission updated sucessfully";
@@ -453,6 +442,7 @@ Class Api
         echo json_encode($response);
     }
 
+    // only meant to be json api request.
     public function deletePermission($id)
     {
         $app = \Slim\Slim::getInstance();
@@ -461,10 +451,7 @@ Class Api
         try
         {
 
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':id', $id);
-            $stmt->execute();
+            $this->db->delete($sql, array(":id" => $id));
 
             $response['success'] = true;
             $response['message'] = "Permission deleted sucessfully";
@@ -480,39 +467,28 @@ Class Api
         echo json_encode($response);
     }
 
-    public function getMachines()
+    public function getMachines($json_request=true)
     {
         $app = \Slim\Slim::getInstance();
         $sql = "SELECT * FROM `Machines`";
 
         try
         {
-            $db = getConnection();
-            $stmt = $db->query($sql);
-            $machines = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $machines = $this->db->select($sql);
 
-            $keys;
-            if(empty($machines))
-            {
-                $response['page_title'] = "No Content";
-                $response['keys'] = getRelationKeys('machines');
-            }
+            if($json_request)
+                echo json_encode($machines);
             else
-            {
-                $keys = array_keys($machines[0]); //get keys from first 'machine'
-                $response['keys'] = $keys;
-                $response['rows'] = $machines;
-                $response['page_title'] = "Machines";
-            }
-            $response['href'] = $app->request->getUrl()."/machines";
-            $app->render('table.html', $response);
+                return $machines;
         }
         catch (Exception $e)
         {
-            // while still debugging
-            $response['page_title'] = "Errors";
             $response['message'] = $e->getMessage();
-            $app->render('error.html', $response);
+            // while still debugging
+            if($json_request)
+                echo json_encode($response);
+            else
+                throw $e;
         }
     }
 
@@ -526,15 +502,17 @@ Class Api
             # get the request
             $body = $app->request->getBody();
             $machine = json_decode($body);
-
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
+            if(empty($machine))
+                throw new Exception("Invalid JSON '$body'", 1);
+                
             $stmt->bindParam(':machine_location', $machine->machine_location);
-            $stmt->execute();
+            $args = array(
+                ":machine_location" => $machine->machine_location
+            );
 
-            $last_id = $db->lastInsertId();
+            $last_id = $this->db->insert($sql, $args);
+
             $response['id'] = $last_id;
-
             $response['success'] = true;
             $response['message'] = "Machine added sucessfully";
         }
@@ -547,39 +525,27 @@ Class Api
         echo json_encode($response);
     }
 
-    public function getMachine($id)
+    public function getMachine($id, $json_request=true)
     {
         $app = \Slim\Slim::getInstance();
         $sql = "SELECT * FROM `Machines` WHERE id=:id";
         try
         {
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':id', $id);
-            $stmt->execute();
-
-            $machine = $stmt->fetch(PDO::FETCH_ASSOC);
-            if(empty($machine))
-                $app->halt(404, "This is not the page you are looking for...");
+            $group = $this->db->select($sql, array(":id" => $id), false);
+            if($json_request)
+                echo json_encode($group);
             else
-            {
-                $keys = array_keys($machine);
-                $response['keys'] = $keys;
-                $response['row'] = $machine;
-                $name = $machine['machine_location'];
-                $response['page_title'] = "Machine: $name";
-                $response['href'] = $app->request->getUrl()."/machines/".$id;
-                
-                $app->render('individual.html', $response);
-            }
+                return $group;
         }
         catch (Exception $e)
         {
-            // while still debugging
-            $response['page_title'] = "Errors";
             $response['message'] = $e->getMessage();
-            $app->render('error.html', $response);
-        }  
+            // while still debugging
+            if($json_request)
+                echo json_encode($response);
+            else
+                throw $e;
+        }
     }
 
     public function updateMachine($id)
@@ -592,12 +558,13 @@ Class Api
         {
             $body = $app->request->getBody();
             $machine = json_decode($body);
+            if(empty($machine))
+                throw new Exception("Invalid JSON '$body'", 1);
 
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':machine_location', $machine->machine_location);
-            $stmt->bindParam(':id', $id);
-            $stmt->execute();
+            $args = array(
+                ":machine_location" => $machine->machine_location,
+                ":id" => $id
+            );
 
             $response['success'] = true;
             $response['message'] = "Machine updated sucessfully";
@@ -619,10 +586,7 @@ Class Api
         try
         {
 
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':id', $id);
-            $stmt->execute();
+            $this->db->delete($sql, array(":id" => $id));
 
             $response['success'] = true;
             $response['message'] = "Machine deleted sucessfully";
@@ -638,39 +602,27 @@ Class Api
         echo json_encode($response);
     }
 
-    public function getUsers()
+    public function getUsers($json_request=true)
     {
         $app = \Slim\Slim::getInstance();
         $sql = "SELECT `id`, `name`, `email`, `group_id`, `balance` FROM `Users`";
 
         try
         {
-            $db = getConnection();
-            $stmt = $db->query($sql);
-            $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            if(empty($users))
-            {
-                $response['page_title'] = "No Content";
-                $response['keys'] = getRelationKeys('users');
-            }
+            $users = $this->db->select($sql);
+            if($json_request)
+                echo json_encode($users);
             else
-            {
-                $keys = array_keys($users[0]); //get keys from first 'user'
-                $keys[] = "password"; // append password to the end
-                $response['keys'] = $keys;
-                $response['rows'] = $users;
-                $response['page_title'] = "Users";
-            }
-            $response['href'] = $app->request->getUrl()."/users";
-            $app->render('table_user.html', $response);
+                return $users;
         }
         catch (Exception $e)
         {
-            // while still debugging
-            $response['page_title'] = "Errors";
             $response['message'] = $e->getMessage();
-            $app->render('error.html', $response);
+            // while still debugging
+            if($json_request)
+                echo json_encode($response);
+            else
+                throw $e;
         }
     }
 
@@ -684,16 +636,22 @@ Class Api
         {
             $body = $app->request->getBody();
             $user = json_decode($body);
+            if(empty($user))
+                throw new Exception("Invalid JSON '$body'", 1);
+                
+            $args = array(
+                ":id" => $user->id,
+                ":password" => new Password($user->password),
+                ":name" => $user->name,
+                ":email" => $user->email,
+                ":group_id" => $user->group_id,
+                ":balance" => $user->balance
+            );
 
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':id', $user->id);
-            $stmt->bindParam(':password', password_hash($user->password, PASSWORD_DEFAULT));
-            $stmt->bindParam(':name', $user->name);
-            $stmt->bindParam(':email', $user->email);
-            $stmt->bindParam(':group_id', $user->group_id);
-            $stmt->bindParam(':balance', $user->balance);
-            $stmt->execute();
+            // Strangely the return id from this function is always wrong
+            // so we make it the id from the request, which will be correct
+            // if the function executes properly
+            $this->db->insert($sql, $args);
 
             $response['id'] = $user->id;
 
@@ -710,40 +668,27 @@ Class Api
         echo json_encode($response);
     }
 
-    public function getUser($id)
+    public function getUser($id, $json_request=true)
     {
         $app = \Slim\Slim::getInstance();
         $sql = "SELECT * FROM `Users` WHERE id=:id";
         try
         {
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':id', $id);
-            $stmt->execute();
-
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
-            if(empty($user))
-                $app->halt(404, "This is not the page you are looking for...");
+            $user = $this->db->select($sql, array(":id" => $id), false);
+            if($json_request)
+                echo json_encode($user);
             else
-            {
-                $user['password'] = '';
-                $keys = array_keys($user);
-                $response['keys'] = $keys;
-                $response['row'] = $user;
-                $name = $user['name'];
-                $response['page_title'] = "User: $name";
-                $response['href'] = $app->request->getUrl()."/users/".$id;
-                
-                $app->render('individual.html', $response);
-            }
+                return $user;
         }
         catch (Exception $e)
         {
-            // while still debugging
-            $response['page_title'] = "Errors";
             $response['message'] = $e->getMessage();
-            $app->render('error.html', $response);
-        }  
+            // while still debugging
+            if($json_request)
+                echo json_encode($response);
+            else
+                throw $e;
+        }
     }
 
     public function updateUser($id)
@@ -756,14 +701,16 @@ Class Api
         {
             $body = $app->request->getBody();
             $user = json_decode($body);
+            if(empty($user))
+                throw new Exception("Invalid JSON '$body'", 1);
 
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':name', $user->name);
-            $stmt->bindParam(':email', $user->email);
-            $stmt->bindParam(':balance', $user->balance);
-            $stmt->bindParam(':id', $id);
-            $stmt->execute();
+            $args = array(
+                ":name" => $user->name,
+                ":email" => $user->email,
+                ":id" => $id
+            );
+
+            $this->db->update($sql, $args);
 
             $response['success'] = true;
             $response['message'] = "User updated sucessfully";
@@ -784,10 +731,7 @@ Class Api
 
         try
         {
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':id', $id);
-            $stmt->execute();
+            $this->db->delete($sql, array(":id" => $id));
 
             $response['success'] = true;
             $response['message'] = "User deleted sucessfully";
@@ -807,23 +751,23 @@ Class Api
     {
         $app = \Slim\Slim::getInstance();
 
-        // if(!(session() && validateSession('user_id', $id)))
+        // if(!(this->session())
         //     $app->halt(404);
         try
         {
             $body = $app->request->getBody();
             $password = json_decode($body);
+            if(empty($password))
+                throw new Exception("Invalid JSON '$body'", 1);
 
             $db = getConnection();
 
             // verify user has correct password
             $sql = "SELECT `password` FROM `Users` WHERE `id`=:id";
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':id', $id);
-            $stmt->execute();
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            if(empty($user) || password_hash($password->old_password, PASSWORD_DEFAULT) != $user['password'])
+            $user = $this->db->select($sql, array(":id" => $id));
+
+            if(empty($user) || !Password::check($password->old_password, $user->password))
             {
                 $response['success'] = false;
                 $response['message'] = "Invalid password. Action refused";
@@ -832,10 +776,12 @@ Class Api
             {
                 $sql = "UPDATE `Users` SET `password`=:password, WHERE `id`=:id";
 
-                $stmt = $db->prepare($sql);
-                $stmt->bindParam(':id', $id);
-                $stmt->bindParam(':password', password_hash($password->new_password, PASSWORD_DEFAULT));
-                $stmt->execute();
+                $args = array(
+                    ":id" => $id,
+                    ":password" => new Password($password->new_password)
+                );
+                
+                $this->db->update($sql, $args);
 
                 $response['success'] = true;
                 $response['message'] = "User password updated sucessfully";
@@ -849,7 +795,6 @@ Class Api
         echo json_encode($response);
     }
 
-    // NOT FINISHED TODO:: set up reset
     public function resetPassword($id)
     {
         $app = \Slim\Slim::getInstance();
@@ -860,11 +805,13 @@ Class Api
         {
             $new_password = string_gen();
             $sql = "UPDATE `Users` SET `password`=:password WHERE `id`=:id";
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(":password", password_hash($new_password, PASSWORD_DEFAULT));
-            $stmt->bindParam(":id", $id);
-            $stmt->execute();
+
+            $args = array(
+                ":password" => new Password($new_password),
+                ":id" => $id
+            );
+
+            $this->db->update($sql, $args);
             
             $response['success'] = true;
             $response['message'] = "New password '$new_password' set for user: $id";
@@ -884,32 +831,21 @@ Class Api
 
         try
         {
-            $db = getConnection();
-            $stmt = $db->query($sql);
-            $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $products = $this->db->select($sql);
 
-            $keys;
-            if(empty($products))
-            {
-                $response['page_title'] = "No Content";
-                $response['keys'] = getRelationKeys('products');
-            }
+            if($json_request)
+                echo json_encode($products);
             else
-            {
-                $keys = array_keys($products[0]); //get keys from first 'product'
-                $response['keys'] = $keys;
-                $response['rows'] = $products;
-                $response['page_title'] = "Products";
-            }
-            $response['href'] = $app->request->getUrl()."/products";
-            $app->render('table.html', $response);
+                return $products;
         }
         catch (Exception $e)
         {
-            // while still debugging
-            $response['page_title'] = "Errors";
             $response['message'] = $e->getMessage();
-            $app->render('error.html', $response);
+            // while still debugging
+            if($json_request)
+                echo json_encode($response);
+            else
+                throw $e;
         }
     }
 
@@ -923,23 +859,21 @@ Class Api
             # get the request
             $body = $app->request->getBody();
             $product = json_decode($body);
-                if(empty($product))
-                    throw new Exception("Invalid json '$body'", 1);
+            if(empty($product))
+                throw new Exception("Invalid JSON '$body'", 1);
                     
+            $args = array(
+                ":sku" => $product->sku,
+                ":name" => $product->name,
+                ":vendor" => $product->vendor,
+                ":cost" => $product->cost
+            );
 
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':sku', $product->sku);
-            $stmt->bindParam(':name', $product->name);
-            $stmt->bindParam(':vendor', $product->vendor);
-            $stmt->bindParam(':cost', $product->cost);
-            $stmt->execute();
-
-            $last_id = $db->lastInsertId();
+            $last_id = $this->db->insert($sql, $args);
             $response['id'] = $last_id;
 
             $response['success'] = true;
-            $response['message'] = "Machine added sucessfully";
+            $response['message'] = "Product added sucessfully";
         }
         catch (Exception $e)
         {
@@ -957,32 +891,20 @@ Class Api
 
         try
         {
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':id', $id);
-            $stmt->execute();
-            $product = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if(empty($product))
-                throw new Exception("No content", 1);
+            $product = $this->db->select($sql, array(":id" => $id), false);
+            if($json_request)
+                echo json_encode($product);
             else
-            {
-                $keys = array_keys($product);
-                $response['keys'] = $keys;
-                $response['row'] = $product;
-                $name = $product['name'];
-                $response['page_title'] = "Product: $name";
-                $response['href'] = $app->request->getUrl()."/products/".$id;
-                
-                $app->render('individual.html', $response);
-            }
+                return $product;
         }
         catch (Exception $e)
         {
-            // while still debugging
-            $response['page_title'] = "Errors";
             $response['message'] = $e->getMessage();
-            $app->render('error.html', $response);
+            // while still debugging
+            if($json_request)
+                echo json_encode($response);
+            else
+                throw $e;
         }
     }
 
@@ -997,16 +919,17 @@ Class Api
             $body = $app->request->getBody();
             $product = json_decode($body);
             if(empty($product))
-                throw new Exception("Invalid json: '$body'", 1);
+                throw new Exception("Invalid JSON '$body'", 1);
 
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':sku', $product->sku);
-            $stmt->bindParam(':name', $product->name);
-            $stmt->bindParam(':vendor', $product->vendor);
-            $stmt->bindParam(':cost', $product->cost);
-            $stmt->bindParam(':id', $id);
-            $stmt->execute();
+            $args = array(
+                ":sku" => $product->sku,
+                ":name" => $product->name,
+                ":vendor" => $product->vendor,
+                ":cost" => $product->cost,
+                ":id" => $id
+            );
+
+            $this->db->update($sql, $args);
 
             $response['success'] = true;
             $response['message'] = "Product updated sucessfully";
@@ -1027,10 +950,7 @@ Class Api
 
         try
         {
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':id', $id);
-            $stmt->execute();
+            $this->db->delete($sql, array(":id" => $id));
 
             $response['success'] = true;
             $response['message'] = "Product deleted sucessfully";
@@ -1053,32 +973,21 @@ Class Api
 
         try
         {
-            $db = getConnection();
-            $stmt = $db->query($sql);
-            $teams = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $teams = $this->db->select($sql);
 
-            $keys;
-            if(empty($teams))
-            {
-                $response['page_title'] = "No Content";
-                $response['keys'] = getRelationKeys('teams');
-            }
+            if($json_request)
+                echo json_encode($teams);
             else
-            {
-                $keys = array_keys($teams[0]); //get keys from first 'team'
-                $response['keys'] = $keys;
-                $response['rows'] = $teams;
-                $response['page_title'] = "Teams";
-            }
-            $response['href'] = $app->request->getUrl()."/teams";
-            $app->render('table.html', $response);
+                return $teams;
         }
         catch (Exception $e)
         {
-            // while still debugging
-            $response['page_title'] = "Errors";
             $response['message'] = $e->getMessage();
-            $app->render('error.html', $response);
+            // while still debugging
+            if($json_request)
+                echo json_encode($response);
+            else
+                throw $e;
         }
     }
 
@@ -1095,18 +1004,17 @@ Class Api
             # get the request
             $body = $app->request->getBody();
             $team = json_decode($body);
-                if(empty($team))
-                    throw new Exception("Invalid json '$body'", 1);
+            if(empty($team))
+                throw new Exception("Invalid JSON '$body'", 1);
 
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':team_name', $team->team_name);
-            $stmt->bindParam(':class', $team->class);
-            $stmt->bindParam(':expiration_date', $team->expiration_date);
-            $stmt->bindParam(':team_balance', $team->team_balance);
-            $stmt->execute();
+            $args = array(
+                ":team_name" => $team->team_name,
+                ":class" => $team->class,
+                ":expiration_date" => $team->expiration_date,
+                ":team_balance" => $team->team_balance
+            );
 
-            $last_id = $db->lastInsertId();
+            $last_id = $this->db->insert($sql, $args);
             $response['id'] = $last_id;
 
             $response['success'] = true;
@@ -1128,32 +1036,20 @@ Class Api
 
         try
         {
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':id', $id);
-            $stmt->execute();
-            $team = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if(empty($team))
-                throw new Exception("No content", 1);
+            $group = $this->db->select($sql, array(":id" => $id), false);
+            if($json_request)
+                echo json_encode($group);
             else
-            {
-                $keys = array_keys($team);
-                $response['keys'] = $keys;
-                $response['row'] = $team;
-                $name = $team['team_name'];
-                $response['page_title'] = "Teams: $name";
-                $response['href'] = $app->request->getUrl()."/teams/".$id;
-                
-                $app->render('individual.html', $response);
-            }
+                return $group;
         }
         catch (Exception $e)
         {
-            // while still debugging
-            $response['page_title'] = "Errors";
             $response['message'] = $e->getMessage();
-            $app->render('error.html', $response);
+            // while still debugging
+            if($json_request)
+                echo json_encode($response);
+            else
+                throw $e;
         }
     }
 
@@ -1169,16 +1065,17 @@ Class Api
             $body = $app->request->getBody();
             $team = json_decode($body);
             if(empty($team))
-                throw new Exception("Invalid json: '$body'", 1);
+                throw new Exception("Invalid JSON '$body'", 1);
 
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':team_name', $team->team_name);
-            $stmt->bindParam(':class', $team->class);
-            $stmt->bindParam(':expiration_date', $team->expiration_date);
-            $stmt->bindParam(':team_balance', $team->team_balance);
-            $stmt->bindParam(':id', $id);
-            $stmt->execute();
+            $args = array(
+                ":team_name" => $team->team_name,
+                ":class" => $team->class,
+                ":expiration_date" => $team->expiration_date,
+                ":team_balance" => $team->team_balance,
+                ":id" => $id
+            );
+
+            $this->db->update($sql, $args);
 
             $response['success'] = true;
             $response['message'] = "Team updated sucessfully";
@@ -1199,10 +1096,7 @@ Class Api
 
         try
         {
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':id', $id);
-            $stmt->execute();
+            $this->db->delete($sql, array(":id" => $id));
 
             $response['success'] = true;
             $response['message'] = "Team deleted sucessfully";
@@ -1225,32 +1119,21 @@ Class Api
 
         try
         {
-            $db = getConnection();
-            $stmt = $db->query($sql);
-            $logs = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $logs = $this->db->select($sql);
 
-            $keys;
-            if(empty($logs))
-            {
-                $response['page_title'] = "No Content";
-                $response['keys'] = getRelationKeys('logs');
-            }
+            if($json_request)
+                echo json_encode($logs);
             else
-            {
-                $keys = array_keys($logs[0]); //get keys from first 'log'
-                $response['keys'] = $keys;
-                $response['rows'] = $logs;
-                $response['page_title'] = "Logs";
-            }
-            $response['href'] = $app->request->getUrl()."/logs";
-            $app->render('table.html', $response);
+                return $logs;
         }
         catch (Exception $e)
         {
-            // while still debugging
-            $response['page_title'] = "Errors";
             $response['message'] = $e->getMessage();
-            $app->render('error.html', $response);
+            // while still debugging
+            if($json_request)
+                echo json_encode($response);
+            else
+                throw $e;
         }
     }
 
@@ -1267,18 +1150,17 @@ Class Api
             # get the request
             $body = $app->request->getBody();
             $log = json_decode($body);
-                if(empty($log))
-                    throw new Exception("Invalid json '$body'", 1);
+            if(empty($log))
+                throw new Exception("Invalid JSON '$body'", 1);
 
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':user_id', $log->user_id);
-            $stmt->bindParam(':product_id', $log->product_id);
-            $stmt->bindParam(':machine_id', $log->machine_id);
-            $stmt->bindParam(':date_purchased', $log->date_purchased);
-            $stmt->execute();
+            $args = array(
+                ":user_id" => $log->user_id,
+                ":product_id" => $log->product_id,
+                ":machine_id" => $log->machine_id,
+                ":date_purchased" => $log->date_purchased
+            );
 
-            $last_id = $db->lastInsertId();
+            $last_id = $this->db->insert($sql, $args);
             $response['id'] = $last_id;
 
             $response['success'] = true;
@@ -1300,32 +1182,20 @@ Class Api
 
         try
         {
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':id', $id);
-            $stmt->execute();
-            $log = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if(empty($log))
-                throw new Exception("No content", 1);
+            $log = $this->db->select($sql, array(":id" => $id), false);
+            if($json_request)
+                echo json_encode($log);
             else
-            {
-                $keys = array_keys($log);
-                $response['keys'] = $keys;
-                $response['row'] = $log;
-                $name = $log['id'] + ':' + $log['date_purchased'];
-                $response['page_title'] = "Logs: $name";
-                $response['href'] = $app->request->getUrl()."/logs/".$id;
-                
-                $app->render('individual.html', $response);
-            }
+                return $log;
         }
         catch (Exception $e)
         {
-            // while still debugging
-            $response['page_title'] = "Errors";
             $response['message'] = $e->getMessage();
-            $app->render('error.html', $response);
+            // while still debugging
+            if($json_request)
+                echo json_encode($response);
+            else
+                throw $e;
         }
     }
 
@@ -1341,16 +1211,16 @@ Class Api
             $body = $app->request->getBody();
             $log = json_decode($body);
             if(empty($log))
-                throw new Exception("Invalid json: '$body'", 1);
+                throw new Exception("Invalid JSON '$body'", 1);
 
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':user_id', $log->user_id);
-            $stmt->bindParam(':product_id', $log->product_id);
-            $stmt->bindParam(':machine_id', $log->machine_id);
-            $stmt->bindParam(':date_purchased', $log->date_purchased);
-            $stmt->bindParam(':id', $id);
-            $stmt->execute();
+            $args = array(
+                ":user_id" => $log->user_id,
+                ":product_id" => $log->product_id,
+                ":machine_id" => $log->machine_id,
+                ":date_purchased" => $log->date_purchased
+            );
+
+            $this->db->update($sql, $args);
 
             $response['success'] = true;
             $response['message'] = "Log updated sucessfully";
@@ -1371,10 +1241,7 @@ Class Api
 
         try
         {
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':id', $id);
-            $stmt->execute();
+            $this->db->delete($sql, array(":id" => $id));
 
             $response['success'] = true;
             $response['message'] = "Log deleted sucessfully";
@@ -1390,7 +1257,7 @@ Class Api
         echo json_encode($response);
     }
 
-    public function getGroupPermissions($id)
+    public function getGroupPermissions($id, $json_request=true)
     {
         $app = \Slim\Slim::getInstance();
         $sql = "SELECT g.`name` AS `group`, p.`description` AS `permission`
@@ -1401,40 +1268,23 @@ Class Api
 
         try
         {
-            $db = getConnection();
-            $stmt = $db->prepare($sql);
-            $stmt->bindParam(':id', $id);
-            $stmt->execute();
-
-            $group = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            if(empty($group))
-                $app->halt(404, "This is not the page you are looking for...");
+            $group_permissions = $this->db->select($sql, array(":id" => $id));
+            
+            if($json_request)
+                echo json_encode($group_permissions);
             else
-            {
-                $stmt = $db->query("SELECT `id` AS `value`, `description` AS `name`
-                FROM `Permissions`");
-                
-                $many = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                $response['many'] = $many;
-
-                $keys = array_keys($group[0]); // keys from first row
-                $response['keys'] = $keys;
-                $response['rows'] = $group;
-                
-                $name = $group[0]['group'];
-                $response['ref_herf'] = $app->request->getUrl()."/groups/$id";
-                $response['page_title'] = "Group: $name - Permissions";
-                $response['name'] = $name;
-                $response['href'] = $app->request->getUrl()."/groups/$id/permissions";
-                
-                $app->render('one_to_many.html', $response);
-            }
+                return $group_permissions;
         }
         catch (Exception $e)
         {
-            // while still debugging
-            $response['page_title'] = "Errors";
-            $response['message'] = $e->getMessage();
-            $app->render('error.html', $response);
+            if($json_request)
+            {
+                // while still debugging
+                $response['message'] = $e->getMessage();
+                echo json_encode($response);
+            }
+            else
+                throw $e;
         }
     }
+}
