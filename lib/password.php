@@ -12,7 +12,7 @@ class Password
 {
     public $_password;
 
-    public static function check($hashed_password, $unhashed_password)
+    public static function check($unhashed_password, $hashed_password)
     {
         return password_verify($unhashed_password, $hashed_password);
     }
