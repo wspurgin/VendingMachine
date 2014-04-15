@@ -1,3 +1,5 @@
 .DS_Store
 *.conf
 init.php
+/vendor
+composer.lock
