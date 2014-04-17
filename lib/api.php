@@ -15,7 +15,6 @@ Class Api
 {
 
     private $db;
-
     private $session_validation;
 
     // function for getting session (though disabling guest sessions)
@@ -26,20 +25,25 @@ Class Api
         return _session($this->session_validation, false);
     }
 
-    public function __construct($session_validation=NULL)
+    public function __construct($session_validation=NULL, $return_as_array=false)
     {
         $dbhost = DB_HOST;
         $dbname = DB_NAME;
         $dbuser = DB_USER;
         $dbpass = DB_PASS;
 
-        $this->db = new Db($dbhost, $dbname, $dbuser, $dbpass);
+        $this->db = new Db($dbhost, $dbname, $dbuser, $dbpass, $return_as_array);
         $this->session_validation = (array)$session_validation;
     }
 
     public function __clone()
     {
         return clone $this;
+    }
+
+    public function switchDbReturnType()
+    {
+        $this->db->setSelectAsArray(!$this->db->getSelectAsArray());
     }
 
     // only meant as api
@@ -333,7 +337,7 @@ Class Api
 
         try
         {
-            $permissions = $this->select($sql);
+            $permissions = $this->db->select($sql);
 
             if($json_request)
                 echo json_encode($permissions);
@@ -638,7 +642,8 @@ Class Api
             $user = json_decode($body);
             if(empty($user))
                 throw new Exception("Invalid JSON '$body'", 1);
-                
+            if(!isset($user->password))
+                $user->password = string_gen(); 
             $args = array(
                 ":id" => $user->id,
                 ":password" => new Password($user->password),
@@ -653,10 +658,12 @@ Class Api
             // if the function executes properly
             $this->db->insert($sql, $args);
 
+            //todo, email new user with password using swiftmailer.
+
             $response['id'] = $user->id;
 
             $response['success'] = true;
-            $response['message'] = "User added sucessfully";
+            $response['message'] = "User added sucessfully with password: ".$user->password;
 
         }
         catch (Exception $e)
@@ -824,7 +831,7 @@ Class Api
         echo json_encode($response);
     }
 
-    public function getProducts()
+    public function getProducts($json_request=false)
     {
         $app = \Slim\Slim::getInstance();
         $sql = "SELECT * FROM `Products`";
@@ -884,7 +891,7 @@ Class Api
         echo json_encode($response);
     }
 
-    public function getProduct($id)
+    public function getProduct($id, $json_request=false)
     {
         $app = \Slim\Slim::getInstance();
         $sql = "SELECT * FROM `Products` WHERE `id`=:id";
@@ -966,7 +973,7 @@ Class Api
         echo json_encode($response);
     }
 
-    public function getTeams()
+    public function getTeams($json_request=false)
     {
         $app = \Slim\Slim::getInstance();
         $sql = "SELECT * FROM `Teams`";
@@ -1029,7 +1036,7 @@ Class Api
         echo json_encode($response);
     }
 
-    public function getTeam($id)
+    public function getTeam($id, $json_request=false)
     {
         $app = \Slim\Slim::getInstance();
         $sql = "SELECT * FROM `Teams` WHERE `id`=:id";
@@ -1112,7 +1119,7 @@ Class Api
         echo json_encode($response);
     }
 
-    public function getLogs()
+    public function getLogs($json_request=false)
     {
         $app = \Slim\Slim::getInstance();
         $sql = "SELECT * FROM `Logs`";
@@ -1175,7 +1182,7 @@ Class Api
         echo json_encode($response);
     }
 
-    public function getLog($id)
+    public function getLog($id, $json_request=false)
     {
         $app = \Slim\Slim::getInstance();
         $sql = "SELECT * FROM `Logs` WHERE `id`=:id";
@@ -1269,11 +1276,16 @@ Class Api
         try
         {
             $group_permissions = $this->db->select($sql, array(":id" => $id));
-            
+ 
             if($json_request)
                 echo json_encode($group_permissions);
             else
-                return $group_permissions;
+            {
+                //provide the permissions in 'many' form
+                $permissions = $this->db->select("SELECT `id` AS `value`,
+                    `description` AS `name` FROM `Permissions`");
+                return array($group_permissions, $permissions);
+            }
         }
         catch (Exception $e)
         {

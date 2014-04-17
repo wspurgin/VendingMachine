@@ -97,10 +97,10 @@ CREATE TABLE Machine_Supplies(
 
 CREATE TABLE Log(
     `id` int(11) UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    `user_id` int(11),
-    `product_id` int(11),
-    `machine_id` int(11),
-    `date_purchased` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `user_id` int(11) NOT NULL,
+    `product_id` int(11) NOT NULL,
+    `machine_id` int(11) NOT NULL,
+    `date_purchased` DATE,
     
     INDEX(`user_id`),
     INDEX(`product_id`),

@@ -8,19 +8,31 @@
 class Db
 {
     private $connection;
+    private $select_as_array;
     
-    function __construct($dbhost, $dbname, $dbuser, $dbpass)
+    function __construct($dbhost, $dbname, $dbuser, $dbpass, $select_as_array=false)
     {
         $dbset = "mysql:host=$dbhost;dbname=$dbname;";
 
         $this->connection = new PDO($dbset, $dbuser, $dbpass);
         $this->connection->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
         $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $this->select_as_array = (bool) $select_as_array;
     }
 
     public function __clone()
     {
         return clone $this;
+    }
+
+    public function getSelectAsArray()
+    {
+        return $this->select_as_array;
+    }
+
+    public function setSelectAsArray($select_as_array)
+    {
+        $this->select_as_array = (bool) $select_as_array;
     }
 
     /**
@@ -74,9 +86,19 @@ class Db
     {
         $stmt = $this->query($sql, $args);
         if($fetch_all)
-            return $stmt->fetchAll(PDO::FETCH_CLASS);
+        {
+            if($this->select_as_array)
+                return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            else
+                return $stmt->fetchAll(PDO::FETCH_CLASS);
+        }
         else # only fetch 1st object (good for queries getting only 1 row)
-            return $stmt->fetch(PDO::FETCH_OBJ);
+        {
+            if($this->select_as_array)
+                return $stmt->fetch(PDO::FETCH_ASSOC);
+            else
+                return $stmt->fetch(PDO::FETCH_OBJ);
+        }
     }
 
     /**
