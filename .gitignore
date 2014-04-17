@@ -2,4 +2,5 @@
 *.conf
 init.php
 /vendor
+composer.phar
 composer.lock
