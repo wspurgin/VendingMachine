@@ -21,6 +21,14 @@
                 {% endif %}
             </div>
         {% endfor %}
+        {% for one in many_names %}
+            <div class="form-group">
+                <label for="{{ one }}"> {{ one }}</label>
+                <div class="push">
+                    {{ macros.button_link(href ~ '/' ~ one, "REDIRECT", one, "View " ~ one ) }}
+                </div>
+            </div>
+        {% endfor %}
         <button type="submit" class="btn btn-success">Update</button>
         <button id="delete-entry" data-href="{{ api_href }}" class="btn btn-danger">Delete</button>
     </form>

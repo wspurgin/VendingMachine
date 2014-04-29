@@ -144,6 +144,7 @@ function getGroup($id)
             $name = $group['name'];
             $response['page_title'] = "Group: $name";
             $response['href'] = $app->request->getUrl()."/groups/".$id;
+            $response['many_names'] = array('permissions');
             $response['api_href'] = $app->request->getUrl()."/api/groups/".$id;
             
             $app->render('individual.html', $response);

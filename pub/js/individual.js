@@ -56,18 +56,22 @@ $("#button-link").click(function(event) {
     var href = $(this).data('href');
     var type = $(this).data('action');
     event.preventDefault();
-    $.ajax({
-        type: type,
-        url: href,
-        dataType: 'json',
-        success: function(data) {
-            if (data.success)
-                alert(data.message);
-            else
-                alert("Could not reset password: " + data.message);
-        },
-        error: function(data) {
-            console.log(data);
-        }
-    })
+    if (type == "REDIRECT") { // assumes redirect
+        window.location.replace(href);
+    } else {
+        $.ajax({
+            type: type,
+            url: href,
+            dataType: 'json',
+            success: function(data) {
+                if (data.success)
+                    alert(data.message);
+                else
+                    alert("Could not reset password: " + data.message);
+            },
+            error: function(data) {
+                console.log(data);
+            }
+        })
+    }
 });
