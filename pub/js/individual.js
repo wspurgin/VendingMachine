@@ -2,7 +2,8 @@ var form = $("#object_form");
 form.submit(function(event) {
     event.preventDefault();
 
-    var href = $(this).data('href');
+    var href = $(this).data('api-href');
+    var redirect = $(this).data('href');
     $.ajax({
         type: 'PUT',
         contentType: 'application/json',
@@ -12,7 +13,7 @@ form.submit(function(event) {
         success: function(data) {
             if (data.success) {
                 alert(data.message);
-                window.location.replace(href);
+                window.location.replace(redirect);
             } else {
                 alert("Could not update this entry. See console log for details");
                 console.log(data.message);

@@ -643,7 +643,7 @@ Class Api
             if(empty($user))
                 throw new Exception("Invalid JSON '$body'", 1);
             if(!isset($user->password))
-                $user->password = string_gen(); 
+                $user = (object) array_merge((array)$user, array("password" => string_gen()));
             $args = array(
                 ":id" => $user->id,
                 ":password" => new Password($user->password),
@@ -766,8 +766,6 @@ Class Api
             $password = json_decode($body);
             if(empty($password))
                 throw new Exception("Invalid JSON '$body'", 1);
-
-            $db = getConnection();
 
             // verify user has correct password
             $sql = "SELECT `password` FROM `Users` WHERE `id`=:id";

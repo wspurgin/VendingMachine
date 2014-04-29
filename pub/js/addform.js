@@ -2,7 +2,8 @@ var form = $("#add_form");
 form.submit(function(event) {
     event.preventDefault();
 
-    var href = $(this).data('href');
+    var href = $(this).data('api-href');
+    var redirect = $(this).data('href');
     $.ajax({
         type: 'POST',
         contentType: 'application/json',
@@ -11,7 +12,7 @@ form.submit(function(event) {
         data: formToJSON($(this)),
         success: function(data) {
             if (data.success) {
-                window.location.replace(href + '/' + data.id);
+                window.location.replace(redirect + '/' + data.id);
             } else {
                 alert("Could not create this entry. See console log for details");
                 console.log(data.message);

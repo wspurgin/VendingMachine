@@ -2,7 +2,7 @@
 {% import "macros.html" as macros %}
 
 {% block content %}
-    <form id="object_form" role="form" data-href="{{ href }}">
+    <form id="object_form" role="form" data-href="{{ href }}" data-api-href="{{ api_href }}">
         {% for key in keys %}
             <div class="form-group">
                 <label for="{{ key }}"> {{ key }}</label>
@@ -10,7 +10,7 @@
                 	{{ macros.immutable(null, key, attribute(row, key)) }}
                 {% elseif 'password' in key %}
                     <div class="push">
-                        {{ macros.button_link(href ~ '/reset', "PUT", key, "Reset Password") }}
+                        {{ macros.button_link(api_href ~ '/reset', "PATCH", key, "Reset Password") }}
                     </div>
                 {% elseif 'balance' in key %}
                         {{ macros.input_number(0, null, key, attribute(row, key)) }}
@@ -22,7 +22,7 @@
             </div>
         {% endfor %}
         <button type="submit" class="btn btn-success">Update</button>
-        <button id="delete-entry" data-href="{{ href }}" class="btn btn-danger">Delete</button>
+        <button id="delete-entry" data-href="{{ api_href }}" class="btn btn-danger">Delete</button>
     </form>
 {% endblock %}
 

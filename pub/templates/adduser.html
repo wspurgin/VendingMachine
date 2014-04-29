@@ -1,6 +1,6 @@
 {% import "macros.html" as macros %}
 
-<form id="add_form" role="form" data-href="{{ href }}">
+<form id="add_form" role="form" data-href="{{ href }}" data-api-href="{{ api_href }}">
     {% for key in keys %}
         <div class="form-group">
             <label for="{{ key }}"> {{ key }}</label>

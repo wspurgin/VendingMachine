@@ -59,7 +59,7 @@ $app->get('/users', 'getUsers');
 $app->get('/users/:id', 'getUser');
 $app->get('/users/:id/change', function($id) use ($app) {
     $response['page_title'] = "Password change: ".$id;
-    $response['href'] = $app->request->getUrl()."/users/".$id."/change";
+    $response['href'] = $app->request->getUrl()."/api/users/".$id."/change";
     $app->render('password_change.html', $response);
 });
 
@@ -116,6 +116,7 @@ function getGroups()
             $response['page_title'] = "Groups";
         }
         $response['href'] = $app->request->getUrl()."/groups";
+        $response['api_href'] = $app->request->getUrl()."/api/groups";
         $app->render('table.html', $response);
     }
     catch (Exception $e)
@@ -143,6 +144,7 @@ function getGroup($id)
             $name = $group['name'];
             $response['page_title'] = "Group: $name";
             $response['href'] = $app->request->getUrl()."/groups/".$id;
+            $response['api_href'] = $app->request->getUrl()."/api/groups/".$id;
             
             $app->render('individual.html', $response);
         }
@@ -175,6 +177,7 @@ function getPermissions()
             $response['page_title'] = "Permissions";
         }
         $response['href'] = $app->request->getUrl()."/permissions";
+        $response['api_href'] = $app->request->getUrl()."/api/permissions";
         $app->render('table.html', $response);
     }
     catch(Exception $e)
@@ -202,6 +205,7 @@ function getPermission($id)
             $name = $permission['code_name'];
             $response['page_title'] = "Permissions: $name";
             $response['href'] = $app->request->getUrl()."/permissions/".$id;
+            $response['api_href'] = $app->request->getUrl()."/api/permissions/".$id;
             
             $app->render('individual.html', $response);
         }
@@ -235,6 +239,7 @@ function getMachines()
             $response['page_title'] = "Machines";
         }
         $response['href'] = $app->request->getUrl()."/machines";
+        $response['api_href'] = $app->request->getUrl()."/api/machines";
         $app->render('table.html', $response);
     }
     catch (Exception $e)
@@ -262,6 +267,7 @@ function getMachine($id)
             $name = $machine['machine_location'];
             $response['page_title'] = "Machine: $name";
             $response['href'] = $app->request->getUrl()."/machines/".$id;
+            $response['api_href'] = $app->request->getUrl()."/api/machines/".$id;
             
             $app->render('individual.html', $response);
         }
@@ -294,6 +300,7 @@ function getUsers()
             $response['page_title'] = "Users";
         }
         $response['href'] = $app->request->getUrl()."/users";
+        $response['api_href'] = $app->request->getUrl()."/api/users";
         $app->render('table_user.html', $response);
     }
     catch (Exception $e)
@@ -321,6 +328,7 @@ function getUser($id)
             $name = $user['name'];
             $response['page_title'] = "User: $name";
             $response['href'] = $app->request->getUrl()."/users/".$id;
+            $response['api_href'] = $app->request->getUrl()."/api/users/".$id;
             
             $app->render('individual.html', $response);
         }
@@ -354,6 +362,7 @@ function getProducts()
             $response['page_title'] = "Products";
         }
         $response['href'] = $app->request->getUrl()."/products";
+        $response['api_href'] = $app->request->getUrl()."/api/products";
         $app->render('table.html', $response);
     }
     catch (Exception $e)
@@ -381,6 +390,7 @@ function getProduct($id)
             $name = $product['name'];
             $response['page_title'] = "Product: $name";
             $response['href'] = $app->request->getUrl()."/products/".$id;
+            $response['api_href'] = $app->request->getUrl()."/api/products/".$id;
             
             $app->render('individual.html', $response);
         }
@@ -414,6 +424,7 @@ function getTeams()
             $response['page_title'] = "Teams";
         }
         $response['href'] = $app->request->getUrl()."/teams";
+        $response['api_href'] = $app->request->getUrl()."/api/teams";
         $app->render('table.html', $response);
     }
     catch (Exception $e)
@@ -443,6 +454,7 @@ function getTeam($id)
             $name = $team['team_name'];
             $response['page_title'] = "Teams: $name";
             $response['href'] = $app->request->getUrl()."/teams/".$id;
+            $response['api_href'] = $app->request->getUrl()."/api/teams/".$id;
             
             $app->render('individual.html', $response);
         }
@@ -476,6 +488,7 @@ function getLogs()
             $response['page_title'] = "Logs";
         }
         $response['href'] = $app->request->getUrl()."/logs";
+        $response['api_href'] = $app->request->getUrl()."/api/logs";
         $app->render('table.html', $response);
     }
     catch (Exception $e)
@@ -503,6 +516,7 @@ function getLog($id)
             $name = $log['id'] + ':' + $log['date_purchased'];
             $response['page_title'] = "Logs: $name";
             $response['href'] = $app->request->getUrl()."/logs/".$id;
+            $response['api_href'] = $app->request->getUrl()."/api/logs/".$id;
             
             $app->render('individual.html', $response);
         }
@@ -526,22 +540,27 @@ function getGroupPermissions($id)
         );
 
         if(empty($group_permissions))
-            renderErrors();
+        {
+            $response['page_title'] = "No Content";
+            # explicitly state key names (for now)
+            $response['keys'] = array('group', 'permission');
+            $response['name'] = $api->getGroup($id, false)['name'];
+        }
         else
         {
-            $response['many'] = $permissions;
             $keys = array_keys((array)$group_permissions[0]); // keys from first row
             $response['keys'] = $keys;
             $response['rows'] = $group_permissions;
             
-            $name = $group[0]->group;
-            $response['ref_herf'] = $app->request->getUrl()."/groups/$id";
+            $name = $group_permissions[0]['group'];
             $response['page_title'] = "Group: $name - Permissions";
             $response['name'] = $name;
-            $response['href'] = $app->request->getUrl()."/groups/$id/permissions";
-            
-            $app->render('one_to_many.html', $response);
         }
+        $response['many'] = $permissions;
+        $response['ref_href'] = $app->request->getUrl()."/groups/$id";
+        $response['href'] = $app->request->getUrl()."/groups/$id/permissions";
+        $response['api_href'] = $app->request->getUrl()."/api/groups/$id/permissions";
+        $app->render('one_to_many.html', $response);
     }
     catch (Exception $e)
     {

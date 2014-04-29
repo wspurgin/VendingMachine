@@ -171,3 +171,11 @@ CREATE TABLE User_Permissions(
         REFERENCES Permissions(`id`)
         ON UPDATE CASCADE ON DELETE CASCADE
 ) ENGINE=INNODB DEFAULT CHARSET=utf8;
+
+-- Triggers
+DELIMITER ;;
+CREATE TRIGGER `insert_current_date` BEFORE INSERT ON `Logs`
+ FOR EACH ROW BEGIN
+    SET new.date_purchased=CURRENT_DATE;
+END;;
+DELIMITER ;
