@@ -1297,4 +1297,40 @@ Class Api
                 throw $e;
         }
     }
+
+    public function getMachineSupplies($id, $json_request=true)
+    {
+        $app = \Slim\Slim::getInstance();
+        $sql = "SELECT m.`machine_location` AS `machine`, p.`name` AS `product`, ms.`quantity` AS `quantity`
+        FROM `Machines` m
+        INNER JOIN `Machine_Supplies` ms ON (m.`id`=ms.`machine_id`)
+        INNER JOIN `Products` p ON (ms.`product_id`=p.`id`)
+        WHERE m.`id`=:id";
+
+        try
+        {
+            $machine_supplies = $this->db->select($sql, array(":id" => $id));
+
+            if($json_request)
+                echo json_encode($machine_supplies);
+            else
+            {
+                //provide the permissions in 'many' form
+                $products = $this->db->select("SELECT `id` AS `value`,
+                    `name` AS `name` FROM `Products`");
+                return array($machine_supplies, $products);
+            }
+        }
+        catch (Exception $e)
+        {
+            if($json_request)
+            {
+                // while still debugging
+                $response['message'] = $e->getMessage();
+                echo json_encode($response);
+            }
+            else
+                throw $e;
+        }
+    }
 }

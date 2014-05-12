@@ -27,7 +27,7 @@ form.submit(function(event) {
 function manyFormToJSON(form) {
     // assmues that the form is using select multiples
     var inputs = {};
-    form.children().children('select').each(function() {
+    form.children().children('select, input').each(function() {
         console.log($(this));
         inputs[$(this).attr('id')] = $(this).val();
     });

@@ -75,7 +75,10 @@ $app->get('/teams/:id', 'getTeam');
 $app->get('/logs', 'getLogs');
 $app->get('/logs/:id', 'getLog');
 
+
+// One to Many Routes
 $app->get('/groups/:id/permissions', 'getGroupPermissions');
+$app->get('/machines/:id/supplies', 'getMachineSupplies');
 
 // Home page route
 $app->get('/', function() use ($app) {
@@ -267,6 +270,7 @@ function getMachine($id)
             $response['row'] = $machine;
             $name = $machine['machine_location'];
             $response['page_title'] = "Machine: $name";
+            $response['many_names'] = array('supplies');
             $response['href'] = $app->request->getUrl()."/machines/".$id;
             $response['api_href'] = $app->request->getUrl()."/api/machines/".$id;
             
@@ -514,7 +518,7 @@ function getLog($id)
             $keys = array_keys((array)$log);
             $response['keys'] = $keys;
             $response['row'] = $log;
-            $name = $log['id'] + ':' + $log['date_purchased'];
+            $name = $log['id'] . ':' . $log['date_purchased'];
             $response['page_title'] = "Logs: $name";
             $response['href'] = $app->request->getUrl()."/logs/".$id;
             $response['api_href'] = $app->request->getUrl()."/api/logs/".$id;
@@ -566,8 +570,47 @@ function getGroupPermissions($id)
     catch (Exception $e)
     {
         // while still debugging
-        $response['page_title'] = "Errors";
-        $response['message'] = $e->getMessage();
-        $app->render('error.html', $response);
+        renderErrors($e->getMessage());
+    }
+}
+
+function getMachineSupplies($id)
+{
+    $app = \Slim\Slim::getInstance();
+    global $api;
+    try
+    {
+        list($machine_supplies, $supplies) = $api->getMachineSupplies(
+            $id, 
+            false
+        );
+
+        if(empty($machine_supplies))
+        {
+            $response['page_title'] = "No Content";
+            # explicitly state key names (for now)
+            $response['keys'] = array('Machine', 'Supplies');
+            $response['name'] = $api->getMachine($id, false)['machine_location'];
+        }
+        else
+        {
+            $keys = array_keys((array)$machine_supplies[0]); // keys from first row
+            $response['keys'] = $keys;
+            $response['rows'] = $machine_supplies;
+            
+            $name = $machine_supplies[0]['machine'];
+            $response['page_title'] = "Machine: $name - supplies";
+            $response['name'] = $name;
+        }
+        $response['many'] = $supplies;
+        $response['ref_href'] = $app->request->getUrl()."/machines/$id";
+        $response['href'] = $app->request->getUrl()."/machines/$id/supplies";
+        $response['api_href'] = $app->request->getUrl()."/api/machines/$id/supplies";
+        $app->render('machine_supplies.html', $response);
+    }
+    catch (Exception $e)
+    {
+        // while still debugging
+        renderErrors($e->getMessage());
     }
 }
