@@ -5,9 +5,12 @@
         <table class="table table-bordered">
             <thead>
                 <tr>
+                {% block form_head %}
                     {% for key in keys %}
                         <th>{{ key }}</th>
                     {% endfor %}
+                    <th>Delete</th>
+                {% endblock %}
                 </tr>
             </thead>
             <tbody>
@@ -20,6 +23,10 @@
                                 <td>{{ data }}</td>
                             {% endif %}
                     {% endfor %}
+                    {% block form_action_buttons %}
+                    {# delete button #}
+                    <td><button class="btn btn-danger" id="delete_entry" data-href="{{ api_href }}">Delete</button></td>
+                    {% endblock %}
                     </tr>
                 {% endfor %}
             </tbody>

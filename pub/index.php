@@ -21,6 +21,17 @@ $app->view->parserOptions = array(
 
 $app->view->parserExtensions = array(new \Slim\Views\TwigExtension());
 
+$twig = $app->view()->getEnvironment();
+// Add function to flatten multi-dimensional array
+$funct = new Twig_SimpleFunction('flatten', function($arr){
+    $return = array();
+    if(is_array($arr))
+        array_walk_recursive($arr, function($a) use (&$return) { $return[] = $a; });
+    else
+        $return[] = $arr;
+    return $return;
+});
+$twig->addFunction($funct);
 
 // get all the bootstraped routes from config
 foreach ($ROUTES as $route) {

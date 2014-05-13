@@ -1,13 +1,16 @@
-{% import "macros.html" as macros %}
-
 <form class="form-inline" id="add_many_form" role="form" data-href="{{ href }}">
+    {# Get the flattened array of rows. #}
+    {% set owned = flatten(rows) %}
     {% for key in keys %}
         <div class="form-group">
     	{% if not loop.first %}
             <label class="sr-only" for="{{ key }}">{{ key }}</label>
             <select multiple id="{{ key }}" class="selectpicker" data-width="auto" data-selected-text-format="count" title="Choose One or More...">
                 {% for one in many %}
-                <option value="{{ one.value }}">{{ one.name }}</option>
+                    {# Only add as option if one's identifier isn't already 'owned' #}
+                    {% if one.name not in owned %}
+                        <option value="{{ one.value }}">{{ one.name }}</option>
+                    {% endif %}
                 {% endfor %}
             </select>
         {% else %}
