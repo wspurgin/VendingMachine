@@ -1,0 +1,36 @@
+{% extends 'one_to_many.html' %}
+{% block form %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+            {% block form_head %}
+                {% for key in keys %}
+                    <th>{{ key }}</th>
+                {% endfor %}
+                <th>Update</th>
+                <th>Delete</th>
+            {% endblock %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in rows %} 
+                <tr>
+                {% for data in row %} 
+                        {% if loop.first %}
+                            <td><a href="{{ ref_href }}">{{ data }}</a></td>
+                        {% else %}
+                            <td>{{ data }}</td>
+                        {% endif %}
+                {% endfor %}
+                {% block form_action_buttons %}
+                    <td><button class="btn btn-success" id="update_entry" data-href="{{ api_href }}">Update</button></td>
+                    {{ parent() }}
+                {% endblock %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}
+{% block add_to_many %}
+    {% include 'add_machine_supplies.html' %}
+{% endblock %}

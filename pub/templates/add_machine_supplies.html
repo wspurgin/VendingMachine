@@ -1,0 +1,23 @@
+<form class="form-inline" id="add_many_form" role="form" data-href="{{ href }}">
+    {# Get the flattened array of rows. #}
+    {% set owned = flatten(rows) %}
+    {% for key in keys %}
+        <div class="form-group">
+        {% if loop.first %}
+            <a href="{{ ref_href }}">{{ name }}</a> --- 
+        {% elseif not loop.last %}
+            <label class="sr-only" for="{{ key }}">{{ key }}</label>
+            <select id="{{ key }}" class="selectpicker" data-width="auto" data-selected-text-format="count" title="Choose One">
+                {% for one in many %}
+                    {% if one.name not in owned %}
+                        <option value="{{ one.value }}">{{ one.name }}</option>
+                    {% endif %}
+                {% endfor %}
+            </select>
+        {% else %}
+            <input type="number" id="{{ key }}" max="25" min="1" value="1"/>
+        {% endif %}
+        </div>
+    {% endfor %}
+    <button type="submit" class="btn btn-success">Add</button>
+</form>
