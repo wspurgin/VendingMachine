@@ -10,7 +10,7 @@
                 	{{ macros.immutable(null, key, attribute(row, key)) }}
                 {% elseif 'password' in key %}
                     <div class="push">
-                        {{ macros.button_link(api_href ~ '/reset', "PATCH", key, "Reset Password") }}
+                        {{ macros.button_link(api_href ~ '/reset', "PATCH", null, "Reset Password") }}
                     </div>
                 {% elseif 'balance' in key %}
                         {{ macros.input_number(0, null, key, attribute(row, key)) }}
@@ -25,7 +25,7 @@
             <div class="form-group">
                 <label for="{{ one }}"> {{ one }}</label>
                 <div class="push">
-                    {{ macros.button_link(href ~ '/' ~ one, "REDIRECT", one, "View " ~ one ) }}
+                    {{ macros.button_link(href ~ '/' ~ one, "REDIRECT", null, "View " ~ one ) }}
                 </div>
             </div>
         {% endfor %}

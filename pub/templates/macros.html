@@ -5,7 +5,7 @@
 	<input disabled class="form-control" type="{{ type|default('text') }}" id="{{ name }}" name="{{ name }}" value="{{ value|default('') }}" />
 {% endmacro %}
 {% macro button_link(href, action, name, value) %}
-	<button class="btn btn-info" id="button-link" data-action="{{ action|default('GET') }}" data-href="{{ href }}">{{ value|default(name) }}</button>
+	<button class="btn btn-info" id="{{ name|default('button-link') }}" data-action="{{ action|default('GET') }}" data-href="{{ href }}">{{ value|default(name) }}</button>
 {% endmacro %}
 {% macro input_number(min, max, name, value) %}
 	<input class="form-control" type="number" id="{{ name }}" name="{{ name }}" value="{{ value|default('') }}" min="{{ min|default('') }}" max="{{ max|default('') }}" />
