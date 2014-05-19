@@ -46,7 +46,7 @@ Class Api
         $this->db->setSelectAsArray(!$this->db->getSelectAsArray());
     }
 
-    // only meant as api
+    // only meant as api json request
     public function loginUser()
     {
         $app = \Slim\Slim::getInstance();
@@ -206,7 +206,10 @@ Class Api
             $groups = $this->db->select($sql);
 
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($groups);
+            }
             else
                 return $groups;
         }
@@ -215,7 +218,10 @@ Class Api
             $response['message'] = $e->getMessage();
             // while still debugging
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($response);
+            }
             else
                 throw $e;
         }
@@ -246,7 +252,7 @@ Class Api
             $response['success'] = false;
             $response['message'] = $e->getMessage();
         }
-
+        $app->contentType('application/json');
         echo json_encode($response);
     }
 
@@ -258,7 +264,10 @@ Class Api
         {
             $group = $this->db->select($sql, array(":id" => $id), false);
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($group);
+            }
             else
                 return $group;
         }
@@ -267,7 +276,10 @@ Class Api
             $response['message'] = $e->getMessage();
             // while still debugging
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($response);
+            }
             else
                 throw $e;
         }
@@ -301,7 +313,7 @@ Class Api
             $response['success'] = false;
             $response['message'] = $e->getMessage();
         }
-
+        $app->contentType('application/json');
         echo json_encode($response);
     }
 
@@ -327,6 +339,7 @@ Class Api
             $response['success'] = false;
             $response['message'] = $e->getMessage();
         }
+        $app->contentType('application/json');
         echo json_encode($response);
     }
 
@@ -340,7 +353,10 @@ Class Api
             $permissions = $this->db->select($sql);
 
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($permissions);
+            }
             else
                 return $permissions;
         }
@@ -349,7 +365,10 @@ Class Api
             $response['message'] = $e->getMessage();
             // while still debugging
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($response);
+            }
             else
                 throw $e;
         }
@@ -386,6 +405,7 @@ Class Api
             $response['success'] = false;
             $response['message'] = $e->getMessage();
         }
+        $app->contentType('application/json');
         echo json_encode($response);
     }
 
@@ -397,7 +417,10 @@ Class Api
         {
             $permission = $this->db->select($sql, array(":id" => $id), false);
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($permission);
+            }
             else
                 return $permission;
         }
@@ -406,7 +429,10 @@ Class Api
             $response['message'] = $e->getMessage();
             // while still debugging
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($response);
+            }
             else
                 throw $e;
         }
@@ -442,7 +468,7 @@ Class Api
             $response['success'] = false;
             $response['message'] = $e->getMessage();
         }
-
+        $app->contentType('application/json');
         echo json_encode($response);
     }
 
@@ -468,6 +494,7 @@ Class Api
             $response['success'] = false;
             $response['message'] = $e->getMessage();
         }
+        $app->contentType('application/json');
         echo json_encode($response);
     }
 
@@ -481,7 +508,10 @@ Class Api
             $machines = $this->db->select($sql);
 
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($machines);
+            }
             else
                 return $machines;
         }
@@ -490,7 +520,10 @@ Class Api
             $response['message'] = $e->getMessage();
             // while still debugging
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($response);
+            }
             else
                 throw $e;
         }
@@ -525,7 +558,7 @@ Class Api
             $response['success'] = false;
             $response['message'] = $e->getMessage();
         }
-
+        $app->contentType('application/json');
         echo json_encode($response);
     }
 
@@ -537,7 +570,10 @@ Class Api
         {
             $group = $this->db->select($sql, array(":id" => $id), false);
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($group);
+            }
             else
                 return $group;
         }
@@ -546,7 +582,10 @@ Class Api
             $response['message'] = $e->getMessage();
             // while still debugging
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($response);
+            }
             else
                 throw $e;
         }
@@ -578,7 +617,7 @@ Class Api
             $response['success'] = false;
             $response['message'] = $e->getMessage();
         }
-
+        $app->contentType('application/json');
         echo json_encode($response);
     }
 
@@ -603,6 +642,7 @@ Class Api
             $response['success'] = false;
             $response['message'] = $e->getMessage();
         }
+        $app->contentType('application/json');
         echo json_encode($response);
     }
 
@@ -615,7 +655,10 @@ Class Api
         {
             $users = $this->db->select($sql);
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($users);
+            }
             else
                 return $users;
         }
@@ -624,7 +667,10 @@ Class Api
             $response['message'] = $e->getMessage();
             // while still debugging
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($response);
+            }
             else
                 throw $e;
         }
@@ -672,6 +718,7 @@ Class Api
             $response['success'] = false;
             $response['message'] = $e->getMessage();
         }
+        $app->contentType('application/json');
         echo json_encode($response);
     }
 
@@ -683,7 +730,10 @@ Class Api
         {
             $user = $this->db->select($sql, array(":id" => $id), false);
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($user);
+            }
             else
                 return $user;
         }
@@ -692,7 +742,10 @@ Class Api
             $response['message'] = $e->getMessage();
             // while still debugging
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($response);
+            }
             else
                 throw $e;
         }
@@ -727,7 +780,7 @@ Class Api
             $response['success'] = false;
             $response['message'] = $e->getMessage();
         }
-
+        $app->contentType('application/json');
         echo json_encode($response);
     }
 
@@ -751,6 +804,7 @@ Class Api
             $response['success'] = false;
             $response['message'] = $e->getMessage();
         }
+        $app->contentType('application/json');
         echo json_encode($response);
     }
 
@@ -797,6 +851,7 @@ Class Api
             $response['success'] = false;
             $response['message'] = $e->getMessage();
         }
+        $app->contentType('application/json');
         echo json_encode($response);
     }
 
@@ -826,10 +881,11 @@ Class Api
             $response['success'] = false;
             $response['message'] = $e->getMessage();
         }
+        $app->contentType('application/json');
         echo json_encode($response);
     }
 
-    public function getProducts($json_request=false)
+    public function getProducts($json_request=true)
     {
         $app = \Slim\Slim::getInstance();
         $sql = "SELECT * FROM `Products`";
@@ -839,7 +895,10 @@ Class Api
             $products = $this->db->select($sql);
 
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($products);
+            }
             else
                 return $products;
         }
@@ -848,7 +907,10 @@ Class Api
             $response['message'] = $e->getMessage();
             // while still debugging
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($response);
+            }
             else
                 throw $e;
         }
@@ -885,11 +947,11 @@ Class Api
             $response['success'] = false;
             $response['message'] = $e->getMessage();
         }
-
+        $app->contentType('application/json');
         echo json_encode($response);
     }
 
-    public function getProduct($id, $json_request=false)
+    public function getProduct($id, $json_request=true)
     {
         $app = \Slim\Slim::getInstance();
         $sql = "SELECT * FROM `Products` WHERE `id`=:id";
@@ -898,7 +960,10 @@ Class Api
         {
             $product = $this->db->select($sql, array(":id" => $id), false);
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($product);
+            }
             else
                 return $product;
         }
@@ -907,7 +972,10 @@ Class Api
             $response['message'] = $e->getMessage();
             // while still debugging
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($response);
+            }
             else
                 throw $e;
         }
@@ -944,7 +1012,7 @@ Class Api
             $response['success'] = false;
             $response['message'] = $e->getMessage();
         }
-
+        $app->contentType('application/json');
         echo json_encode($response);
     }
 
@@ -968,10 +1036,11 @@ Class Api
             $response['success'] = false;
             $response['message'] = $e->getMessage();
         }
+        $app->contentType('application/json');
         echo json_encode($response);
     }
 
-    public function getTeams($json_request=false)
+    public function getTeams($json_request=true)
     {
         $app = \Slim\Slim::getInstance();
         $sql = "SELECT * FROM `Teams`";
@@ -981,7 +1050,10 @@ Class Api
             $teams = $this->db->select($sql);
 
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($teams);
+            }
             else
                 return $teams;
         }
@@ -990,7 +1062,10 @@ Class Api
             $response['message'] = $e->getMessage();
             // while still debugging
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($response);
+            }
             else
                 throw $e;
         }
@@ -1030,11 +1105,11 @@ Class Api
             $response['success'] = false;
             $response['message'] = $e->getMessage();
         }
-
+        $app->contentType('application/json');
         echo json_encode($response);
     }
 
-    public function getTeam($id, $json_request=false)
+    public function getTeam($id, $json_request=true)
     {
         $app = \Slim\Slim::getInstance();
         $sql = "SELECT * FROM `Teams` WHERE `id`=:id";
@@ -1043,7 +1118,10 @@ Class Api
         {
             $group = $this->db->select($sql, array(":id" => $id), false);
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($group);
+            }
             else
                 return $group;
         }
@@ -1052,7 +1130,10 @@ Class Api
             $response['message'] = $e->getMessage();
             // while still debugging
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($response);
+            }
             else
                 throw $e;
         }
@@ -1090,7 +1171,7 @@ Class Api
             $response['success'] = false;
             $response['message'] = $e->getMessage();
         }
-
+        $app->contentType('application/json');
         echo json_encode($response);
     }
 
@@ -1114,10 +1195,11 @@ Class Api
             $response['success'] = false;
             $response['message'] = $e->getMessage();
         }
+        $app->contentType('application/json');
         echo json_encode($response);
     }
 
-    public function getLogs($json_request=false)
+    public function getLogs($json_request=true)
     {
         $app = \Slim\Slim::getInstance();
         $sql = "SELECT * FROM `Logs`";
@@ -1127,7 +1209,10 @@ Class Api
             $logs = $this->db->select($sql);
 
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($logs);
+            }
             else
                 return $logs;
         }
@@ -1136,7 +1221,10 @@ Class Api
             $response['message'] = $e->getMessage();
             // while still debugging
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($response);
+            }
             else
                 throw $e;
         }
@@ -1176,11 +1264,11 @@ Class Api
             $response['success'] = false;
             $response['message'] = $e->getMessage();
         }
-
+        $app->contentType('application/json');
         echo json_encode($response);
     }
 
-    public function getLog($id, $json_request=false)
+    public function getLog($id, $json_request=true)
     {
         $app = \Slim\Slim::getInstance();
         $sql = "SELECT * FROM `Logs` WHERE `id`=:id";
@@ -1189,7 +1277,10 @@ Class Api
         {
             $log = $this->db->select($sql, array(":id" => $id), false);
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($log);
+            }
             else
                 return $log;
         }
@@ -1198,7 +1289,10 @@ Class Api
             $response['message'] = $e->getMessage();
             // while still debugging
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($response);
+            }
             else
                 throw $e;
         }
@@ -1235,7 +1329,7 @@ Class Api
             $response['success'] = false;
             $response['message'] = $e->getMessage();
         }
-
+        $app->contentType('application/json');
         echo json_encode($response);
     }
 
@@ -1259,6 +1353,7 @@ Class Api
             $response['success'] = false;
             $response['message'] = $e->getMessage();
         }
+        $app->contentType('application/json');
         echo json_encode($response);
     }
 
@@ -1276,7 +1371,10 @@ Class Api
             $group_permissions = $this->db->select($sql, array(":id" => $id));
  
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($group_permissions);
+            }
             else
             {
                 //provide the permissions in 'many' form
@@ -1291,6 +1389,7 @@ Class Api
             {
                 // while still debugging
                 $response['message'] = $e->getMessage();
+                $app->contentType('application/json');
                 echo json_encode($response);
             }
             else
@@ -1312,7 +1411,10 @@ Class Api
             $machine_supplies = $this->db->select($sql, array(":id" => $id));
 
             if($json_request)
+            {
+                $app->contentType('application/json');
                 echo json_encode($machine_supplies);
+            }
             else
             {
                 //provide the permissions in 'many' form
@@ -1327,6 +1429,7 @@ Class Api
             {
                 // while still debugging
                 $response['message'] = $e->getMessage();
+                $app->contentType('application/json');
                 echo json_encode($response);
             }
             else
