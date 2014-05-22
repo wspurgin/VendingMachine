@@ -56,6 +56,7 @@ function getSession($set_guest=true)
             session_name($name); // set session name
             session_start(); // resume session
         }
+        // to avoid garabage collector greediness
         $_SESSION['last_access'] = time();
     }
     return true;

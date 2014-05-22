@@ -52,7 +52,14 @@ $("#delete-entry").click(function(event) {
     };
 });
 
-$("#button-link").click(function(event) {
+// button-links
+$("button").click(function(event) {
+    var check = $(this).data('type');
+    if (check === undefined) {
+        return;
+    } else if (check != 'button-link') {
+        return;
+    }
     var href = $(this).data('href');
     var type = $(this).data('action');
     event.preventDefault();
@@ -67,7 +74,7 @@ $("#button-link").click(function(event) {
                 if (data.success)
                     alert(data.message);
                 else
-                    alert("Could not reset password: " + data.message);
+                    alert("Could not process request: " + data.message);
             },
             error: function(data) {
                 console.log(data);

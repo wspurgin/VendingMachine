@@ -1,7 +1,7 @@
 <?php
 /*
 Route
-    type GET POST PUT DELETE
+    type GET POST PUT DELETE PATCH
     url [string]
     callable [callable] where to go with url
 */
@@ -38,7 +38,7 @@ class Route
         if (is_callable($callable))
             $this->callable = $callable;
         else
-            throw new Exception("3rd argument in __construct() must be a callable (return true on 'is_callable()'", 1);
+            throw new Exception("3rd argument in __construct() must be a callable (return true on 'is_callable()')", 1);
             
     }
 }

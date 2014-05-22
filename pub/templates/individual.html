@@ -6,8 +6,13 @@
         {% for key in keys %}
             <div class="form-group">
                 <label for="{{ key }}"> {{ key }}</label>
-                {% if 'id' in key %}
+                {% if 'id' == key %}
                 	{{ macros.immutable(null, key, attribute(row, key)) }}
+                {% elseif key != 'id' and 'id' in key %}
+                    {% set fk = (key|replace({'_id': ''}) ~ 's') %}
+                    <div class="push">
+                        <a href="{{ '/' ~ fk ~ '/' ~ attribute(row, key)}}">{{ fk ~ ' - ' ~ attribute(row, key) }}</a>
+                    </div>
                 {% elseif 'password' in key %}
                     <div class="push">
                         {{ macros.button_link(api_href ~ '/reset', "PATCH", null, "Reset Password") }}

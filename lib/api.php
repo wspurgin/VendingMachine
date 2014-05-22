@@ -17,14 +17,6 @@ Class Api
     private $db;
     private $session_validation;
 
-    // function for getting session (though disabling guest sessions)
-    // and validating the session.
-    public function session()
-    {
-        // 'false' for disabling guest sessions
-        return _session($this->session_validation, false);
-    }
-
     public function __construct($session_validation=NULL, $return_as_array=false)
     {
         $dbhost = DB_HOST;
@@ -41,10 +33,90 @@ Class Api
         return clone $this;
     }
 
+    //Helper functions
+
+    // function for getting session (though disabling guest sessions)
+    // and validating the session.
+    public function session()
+    {
+        // 'false' for disabling guest sessions
+        return _session($this->session_validation, false);
+    }
+
     public function switchDbReturnType()
     {
         $this->db->setSelectAsArray(!$this->db->getSelectAsArray());
     }
+
+    // This function requires that the session already has the user_id
+    private function loadSessionPermissions($reload=false)
+    {
+        $sql = "SELECT `code_name`
+        FROM `User_Permissions` INNER JOIN (`Permissions`) ON
+        (`User_Permissions`.`permission_id`=`Permissions`.`id`)
+        WHERE `user_id`=:id";
+
+        if(!isset($_SESSION['permissions']) || $reload)
+        {
+            $permissions = $this->db->select(
+                $sql, array(":id" => $_SESSION['user_id'])
+            );
+
+            foreach ($permissions as $p)
+                $_SESSION['permissions'][$p['code_name']] = true;
+        }
+    }
+
+    // function for getting the attribure names for a given relation in SQL
+    public function getRelationKeys($relation)
+    {
+        $dbname = DB_NAME;
+
+        $sql = "SELECT `COLUMN_NAME` 
+        FROM `INFORMATION_SCHEMA`.`COLUMNS` 
+        WHERE `TABLE_SCHEMA`='$dbname' 
+        AND `TABLE_NAME`='$relation'";
+
+        try
+        {
+            $col_names = $this->db->select($sql);
+
+            foreach ($col_names as $col)
+                $keys[] = $col['COLUMN_NAME'];
+            return $keys;
+        }
+        catch (Exception $e)
+        {
+            // throw the error for calling functions (for now no extra logging)
+            throw $e;
+        }
+    }
+
+    public static function string_gen($length=10)
+    { return substr(md5(rand()), 0, $length); }
+
+    // end of helper functions
+
+    /**
+    *   Beginning of Main api code.
+    *
+    *   General Notes:
+    *   This api acts as a RESTful API for the VendingMachine project.
+    *   For an explanation of REST see
+    *       (http://en.wikipedia.org/wiki/Representational_state_transfer).
+    *   In addition to serving REST endpoints. This API is also meant to be
+    *   easily usable with other PHP code. Thus there are several paramaters
+    *   in many functions entitled '$json_request'. This is to allow PHP code
+    *   (such as that found in pub/index.php) to access the data directly and
+    *   pass it on to the Twig PHP templating engine.
+    *
+    *   Developer Notes:
+    *   These functions are grouped around specific models.
+    *   It should be noted that these models' functions are implemented
+    *   almosted exactly the same way. Therefore this would be a good place
+    *   to refactor. Possible by abstracting these models away in a more 
+    *   OOP oriented style.
+    */
 
     // only meant as api json request
     public function loginUser()
@@ -78,10 +150,9 @@ Class Api
                     newSession(md5(SALT.$user->username));
                     $_SESSION['user_id'] = $user->id;
                     $_SESSION['name'] = $user->name;
-                    $_SESSION['permissions'] = getUserPermissions($user->id);
+                    $this->loadSessionPermissions($user->id);
                     $response['success'] = true;
                     $response['message'] = "$user->name logged in successfully";
-                    $response['request'] = $_SESSION;
                 }
             }
         }
@@ -137,64 +208,6 @@ Class Api
         }
         echo json_encode($response);
     }
-
-    public function getUserPermissions($id)
-    {
-        $sql = "SELECT `permission_id`, `description`, `code_name`
-        FROM `User_Permissions` INNER JOIN (`Permissions`) ON
-        (`User_Permissions`.`permission_id`=`Permissions`.`id`)
-        WHERE `user_id`=:id";
-
-        try
-        {
-            $permissions = $this->db->select($sql, array(":id" => $id));
-            return $permissions;
-        }
-        catch (Exception $e)
-        {
-            // throw the error for calling functions
-            throw $e;
-        }
-    }
-
-    // function for getting the attribure names for a given relation in SQL
-    public function getRelationKeys($relation)
-    {
-        $dbname = DB_NAME;
-
-        $sql = "SELECT `COLUMN_NAME` 
-        FROM `INFORMATION_SCHEMA`.`COLUMNS` 
-        WHERE `TABLE_SCHEMA`='$dbname' 
-        AND `TABLE_NAME`='$relation'";
-
-        try
-        {
-            $col_names = $this->db->select($sql);
-
-            foreach ($col_names as $col)
-                $keys[] = $col['COLUMN_NAME'];
-            return $keys;
-        }
-        catch (Exception $e)
-        {
-            // throw the error for calling functions
-            throw $e;
-        }
-    }
-
-    public function string_gen($length=10)
-    {
-        try
-        {
-            return substr(md5(rand()), 0, $length);
-        }
-        catch (Exception $e)
-        {
-            throw $e;
-        }
-    }
-
-    // end of helper functions
 
     public function getGroups($json_request=true)
     {
@@ -767,6 +780,7 @@ Class Api
             $args = array(
                 ":name" => $user->name,
                 ":email" => $user->email,
+                ":balance" => $user->balance,
                 ":id" => $id
             );
 
@@ -863,7 +877,7 @@ Class Api
         //     $app->halt(404);
         try
         {
-            $new_password = string_gen();
+            $new_password = $this->string_gen();
             $sql = "UPDATE `Users` SET `password`=:password WHERE `id`=:id";
 
             $args = array(
@@ -1417,10 +1431,50 @@ Class Api
             }
             else
             {
-                //provide the permissions in 'many' form
+                //provide the products in 'many' form
                 $products = $this->db->select("SELECT `id` AS `value`,
                     `name` AS `name` FROM `Products`");
                 return array($machine_supplies, $products);
+            }
+        }
+        catch (Exception $e)
+        {
+            if($json_request)
+            {
+                // while still debugging
+                $response['message'] = $e->getMessage();
+                $app->contentType('application/json');
+                echo json_encode($response);
+            }
+            else
+                throw $e;
+        }
+    }
+
+    public function getUserPermissions($id, $json_request=false)
+    {
+        $app = \Slim\Slim::getInstance();
+        $sql = "SELECT u.`name` AS `user`, p.`description` AS `permission`
+        FROM `Users` u
+        INNER JOIN `User_Permissions` up ON (u.`id`=up.`user_id`)
+        INNER JOIN `Permissions` p ON (up.`permission_id`=p.`id`)
+        WHERE u.`id`=:id";
+
+        try
+        {
+            $user_permissions = $this->db->select($sql, array(":id" => $id));
+ 
+            if($json_request)
+            {
+                $app->contentType('application/json');
+                echo json_encode($user_permissions);
+            }
+            else
+            {
+                //provide the permissions in 'many' form
+                $permissions = $this->db->select("SELECT `id` AS `value`,
+                    `description` AS `name` FROM `Permissions`");
+                return array($user_permissions, $permissions);
             }
         }
         catch (Exception $e)

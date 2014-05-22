@@ -89,6 +89,7 @@ $app->get('/logs/:id', 'getLog');
 
 // One to Many Routes
 $app->get('/groups/:id/permissions', 'getGroupPermissions');
+$app->get('/users/:id/permissions', 'getUserPermissions');
 $app->get('/machines/:id/supplies', 'getMachineSupplies');
 
 // Home page route
@@ -344,6 +345,7 @@ function getUser($id)
             $name = $user['name'];
             $response['page_title'] = "User: $name";
             $response['href'] = $app->request->getUrl()."/users/".$id;
+            $response['many_names'] = array('permissions');
             $response['api_href'] = $app->request->getUrl()."/api/users/".$id;
             
             $app->render('individual.html', $response);
@@ -424,7 +426,7 @@ function getTeams()
     global $api;
     try
     {
-        $teams = $api->getTeams();
+        $teams = $api->getTeams(false);
 
         $keys;
         if(empty($teams))
@@ -581,6 +583,47 @@ function getGroupPermissions($id)
     catch (Exception $e)
     {
         // while still debugging
+        renderErrors($e->getMessage());
+    }
+}
+
+function getUserPermissions($id)
+{
+    $app = \Slim\Slim::getInstance();
+    global $api;
+    try
+    {
+        list($user_permissions, $permissions) = $api->getGroupPermissions(
+            $id,
+            false
+        );
+
+        if(empty($user_permissions))
+        {
+            $response['page_title'] = "No Content";
+            #explicitly state key names (for now)
+            $response['keys'] = array('User', 'Permission');
+            $response['name'] = $api->getUser($id, false)['name'];
+        }
+        else
+        {
+            $key = array_keys((array) $user_permissions[0]);
+            $response['keys'] = $keys;
+            $response['rows'] = $user_permissions;
+            
+            $name = $user_permissions[0]['user'];
+            $response['page_title'] = "User: $name - Permissions";
+            $response['name'] = $name;
+
+        }
+        $response['many'] = $permissions;
+        $response['ref_href'] = $app->request->getUrl()."/users/$id";
+        $response['href'] = $app->request->getUrl()."/users/$id/permissions";
+        $response['api_href'] = $app->request->getUrl()."/api/users/$id/permissions";
+        $app->render('one_to_many.html', $response);
+    }
+    catch (Exception $e)
+    {
         renderErrors($e->getMessage());
     }
 }

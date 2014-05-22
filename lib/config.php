@@ -36,6 +36,7 @@ $ROUTES = array(
     new Route('/api/users/:id', Route::DELETE, array($api, 'deleteUser')),
     new Route('/api/users/:id/change', Route::PATCH, array($api, 'changePassword')),
     new Route('/api/users/:id/reset', Route::PATCH, array($api, 'resetPassword')),
+    new Route('/api/users/:id/permissions', Route::GET, array($api, 'getUserPermissions')),
     new Route('/api/products', Route::GET, array($api, 'getProducts')),
     new Route('/api/products', Route::POST, array($api, 'addProduct')),
     new Route('/api/products/:id', Route::GET, array($api, 'getProduct')),
