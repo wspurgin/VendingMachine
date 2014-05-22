@@ -1,4 +1,4 @@
-<form class="form-inline" id="add_many_form" role="form" data-href="{{ href }}">
+<form class="form-inline" id="add_many_form" role="form" data-href="{{ href }}" data-api-href="{{ api_href }}">
     {# Get the flattened array of rows. #}
     {% set owned = flatten(rows) %}
     {% for key in keys %}

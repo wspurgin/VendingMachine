@@ -18,6 +18,7 @@ $ROUTES = array(
     new Route('/api/groups/:id', Route::PUT, array($api, 'updateGroup')),
     new Route('/api/groups/:id', Route::DELETE, array($api, 'deleteGroup')),
     new Route('/api/groups/:id/permissions', Route::GET, array($api, 'getGroupPermissions')),
+    new Route('/api/groups/:id/permissions', Route::POST, array($api, 'addGroupPermissions')),
     new Route('/api/permissions', Route::GET, array($api, 'getPermissions')),
     new Route('/api/permissions', Route::POST, array($api, 'addPermission')),
     new Route('/api/permissions/:id', Route::GET, array($api, 'getPermission')),

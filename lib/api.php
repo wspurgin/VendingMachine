@@ -51,10 +51,15 @@ Class Api
     // This function requires that the session already has the user_id
     private function loadSessionPermissions($reload=false)
     {
-        $sql = "SELECT `code_name`
-        FROM `User_Permissions` INNER JOIN (`Permissions`) ON
-        (`User_Permissions`.`permission_id`=`Permissions`.`id`)
-        WHERE `user_id`=:id";
+        $sql = "SELECT DISTINCT(`code_name`) AS `code_name`
+        FROM `Users` u
+        INNER JOIN `Group_Permissions` gp
+        ON (u.`group_id`=gp.`group_id`)
+        LEFT JOIN `User_Permissions` up
+        ON (u.`id`=up.`user_id`)
+        INNER JOIN `Permissions` p
+        ON (up.`permission_id`=p.`id` OR gp.`permission_id`=p.`id`)
+        WHERE u.`id`=:id";
 
         if(!isset($_SESSION['permissions']) || $reload)
         {
@@ -702,7 +707,7 @@ Class Api
             if(empty($user))
                 throw new Exception("Invalid JSON '$body'", 1);
             if(!isset($user->password))
-                $user = (object) array_merge((array)$user, array("password" => string_gen()));
+                $user = (object) array_merge((array)$user, array("password" => Api::string_gen()));
             $args = array(
                 ":id" => $user->id,
                 ":password" => new Password($user->password),
@@ -877,7 +882,7 @@ Class Api
         //     $app->halt(404);
         try
         {
-            $new_password = $this->string_gen();
+            $new_password = Api::string_gen();
             $sql = "UPDATE `Users` SET `password`=:password WHERE `id`=:id";
 
             $args = array(
@@ -1088,7 +1093,6 @@ Class Api
     public function addTeam()
     {
         $app = \Slim\Slim::getInstance();
-        $app->contentType('application/json');
         $sql = "INSERT INTO `Teams`(`team_name`, `class`, `expiration_date`,
             `team_balance`)
         VALUES (:team_name, :class, :expiration_date, :team_balance)";
@@ -1247,7 +1251,6 @@ Class Api
     public function addLog()
     {
         $app = \Slim\Slim::getInstance();
-        $app->contentType('application/json');
         $sql = "INSERT INTO `Logs`(`user_id`, `product_id`, `machine_id`,
             `date_purchased`)
         VALUES (:user_id, :product_id, :machine_id, :date_purchased)";
@@ -1409,6 +1412,44 @@ Class Api
             else
                 throw $e;
         }
+    }
+
+    public function addGroupPermissions($id)
+    {
+        $app = \Slim\Slim::getInstance();
+        $sql = "INSERT INTO Group_Permissions (`group_id`, `permission_id`)
+        VALUES";
+        try
+        {
+            $body = $app->request->getBody();
+            $request = json_decode($body);
+
+            if(empty($request))
+                throw new Exception("Invalid JSON '$body'", 1);
+
+            $permissions = $request->permission;
+            foreach ($permissions as $key => $p)
+            {
+                end($permissions);
+                if($key === key($permissions))
+                    $sql .= " (:id_$key, :$key)";    
+                else
+                    $sql .= " (:id_$key, :$key),";
+                $args[":$key"] = $p;
+                $args[":id_$key"] = $id;
+            }
+            $this->db->insert($sql, $args);
+
+            $response['success'] = true;
+            $response['message'] = count($permissions) . " permissions have benn added to Group.";
+        }
+        catch (Exception $e)
+        {
+            $response['success'] = false;
+            $response['message'] = $e->getMessage();
+        }
+        $app->contentType('application/json');
+        echo json_encode($response);
     }
 
     public function getMachineSupplies($id, $json_request=true)

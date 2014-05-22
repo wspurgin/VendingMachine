@@ -51,7 +51,7 @@ class Db
         {
             
             if(is_int($key))
-                $stmt->bindValue($value);
+                $stmt->bindValue($key + 1, $value); // to handle question marks
             else
                 $stmt->bindValue($key, $value); 
         }
