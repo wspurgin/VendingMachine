@@ -55,9 +55,7 @@ $("#delete-entry").click(function(event) {
 // button-links
 $("button").click(function(event) {
     var check = $(this).data('type');
-    if (check === undefined) {
-        return;
-    } else if (check != 'button-link') {
+    if (check === undefined || check != 'button-link') {
         return;
     }
     var href = $(this).data('href');
