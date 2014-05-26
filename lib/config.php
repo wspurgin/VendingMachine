@@ -30,6 +30,7 @@ $ROUTES = array(
     new Route('/api/machines/:id', Route::PUT, array($api, 'updateMachine')),
     new Route('/api/machines/:id', Route::DELETE, array($api, 'deleteMachine')),
     new Route('/api/machines/:id/supplies', Route::GET, array($api, 'getMachineSupplies')),
+    new Route('/api/machines/:id/supplies', Route::POST, array($api, 'addMachineSupplies')),
     new Route('/api/users', Route::GET, array($api, 'getUsers')),
     new Route('/api/users', Route::POST, array($api, 'addUser')),
     new Route('/api/users/:id', Route::GET, array($api, 'getUser')),

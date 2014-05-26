@@ -23,7 +23,7 @@
                         {% endif %}
                 {% endfor %}
                 {% block form_action_buttons %}
-                    <td><button class="btn btn-success" id="update_entry" data-href="{{ api_href }}">Update</button></td>
+                    <td><button class="btn btn-success" id="update_entry" data-api-href="{{ api_href }}">Update</button></td>
                     {{ parent() }}
                 {% endblock %}
                 </tr>

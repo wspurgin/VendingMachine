@@ -109,8 +109,8 @@ Class Api
     *   This api acts as a RESTful API for the VendingMachine project.
     *   For an explanation of REST see
     *       (http://en.wikipedia.org/wiki/Representational_state_transfer).
-    *   In addition to serving REST endpoints. This API is also meant to be
-    *   easily usable with other PHP code. Thus there are several paramaters
+    *   In addition to serving REST endpoints, this API is also meant to be
+    *   easily usable with other PHP code. Thus there are paramaters
     *   in many functions entitled '$json_request'. This is to allow PHP code
     *   (such as that found in pub/index.php) to access the data directly and
     *   pass it on to the Twig PHP templating engine.
@@ -120,7 +120,7 @@ Class Api
     *   It should be noted that these models' functions are implemented
     *   almosted exactly the same way. Therefore this would be a good place
     *   to refactor. Possible by abstracting these models away in a more 
-    *   OOP oriented style.
+    *   OOP style.
     */
 
     // only meant as api json request
@@ -1490,6 +1490,69 @@ Class Api
             else
                 throw $e;
         }
+    }
+
+    public function addMachineSupplies($id)
+    {
+        $app = \Slim\Slim::getInstance();
+        $sql = "INSERT INTO Machine_Supplies (`machine_id`, `product_id`, `quantity`)
+        VALUES (:id, :product, :quantity)";
+        $args = array();
+
+        try
+        {
+            $body = $app->request->getBody();
+            $request = json_decode($body);
+
+            if(empty($request))
+                throw new Exception("Invalid JSON '$body'", 1);
+
+            $args[':product'] = $request->product;
+            $args[':quantity'] = $request->quantity;
+            $args[':id'] = $id;
+            $this->db->insert($sql, $args);
+
+            $response['success'] = true;
+            $response['message'] = 'Product added successfully to Machine\'s supplies';
+        }
+        catch (Exception $e)
+        {
+            $response['success'] = false;
+            $response['message'] = $e->getMessage();
+        }
+        $app->contentType('application/json');
+        echo json_encode($response);
+    }
+
+    public function updateMachineSupplies($id)
+    {
+        $app = \Slim\Slim::getInstance();
+        $sql = "UPDATE Machine_Supplies SET `quantity`=:quantity
+        WHERE `machine_id=:id AND `product_id`=:product";
+
+        try
+        {
+            $body = $app->request->getBody();
+            $request = json_decode($body);
+
+            if(empty($request))
+                throw new Exception("Invalid JSON '$body'", 1);
+
+            $args[':product'] = $request->product;
+            $args[':quantity'] = $request->quantity;
+            $args[':id'] = $id;
+            $this->db->update($sql, $args);
+
+            $response['success'] = true;
+            $response['message'] = 'Successfully updated Machine\'s supplies';
+        }
+        catch (Exception $e)
+        {
+            $response['success'] = false;
+            $response['message'] = $e->getMessage();
+        }
+        $app->contentType('application/json');
+        echo json_encode($response);
     }
 
     public function getUserPermissions($id, $json_request=false)
