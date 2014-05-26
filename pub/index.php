@@ -593,7 +593,7 @@ function getUserPermissions($id)
     global $api;
     try
     {
-        list($user_permissions, $permissions) = $api->getGroupPermissions(
+        list($user_permissions, $permissions) = $api->getUserPermissions(
             $id,
             false
         );
@@ -607,7 +607,7 @@ function getUserPermissions($id)
         }
         else
         {
-            $key = array_keys((array) $user_permissions[0]);
+            $keys = array_keys((array) $user_permissions[0]);
             $response['keys'] = $keys;
             $response['rows'] = $user_permissions;
             

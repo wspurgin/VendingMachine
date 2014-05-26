@@ -1531,4 +1531,42 @@ Class Api
                 throw $e;
         }
     }
+
+    public function addUserPermissions($id)
+    {
+        $app = \Slim\Slim::getInstance();
+        $sql = "INSERT INTO User_Permissions (`user_id`, `permission_id`)
+        VALUES";
+        try
+        {
+            $body = $app->request->getBody();
+            $request = json_decode($body);
+
+            if(empty($request))
+                throw new Exception("Invalid JSON '$body'", 1);
+
+            $permissions = $request->permission;
+            foreach ($permissions as $key => $p)
+            {
+                end($permissions);
+                if($key === key($permissions))
+                    $sql .= " (:id_$key, :$key)";    
+                else
+                    $sql .= " (:id_$key, :$key),";
+                $args[":$key"] = $p;
+                $args[":id_$key"] = $id;
+            }
+            $this->db->insert($sql, $args);
+
+            $response['success'] = true;
+            $response['message'] = count($permissions) . " permissions have benn added to User.";
+        }
+        catch (Exception $e)
+        {
+            $response['success'] = false;
+            $response['message'] = $e->getMessage();
+        }
+        $app->contentType('application/json');
+        echo json_encode($response);
+    }
 }
