@@ -3,7 +3,9 @@
     {% set owned = flatten(rows) %}
     {% for key in keys %}
         <div class="form-group">
-    	{% if not loop.first %}
+        {% if key == 'id' %}
+        {# do nothing #}
+    	{% elseif not loop.first %}
             <label class="sr-only" for="{{ key }}">{{ key }}</label>
             <select multiple id="{{ key }}" class="selectpicker" data-width="auto" data-selected-text-format="count" title="Choose One or More...">
                 {% for one in many %}

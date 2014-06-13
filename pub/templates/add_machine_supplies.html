@@ -3,7 +3,9 @@
     {% set owned = flatten(rows) %}
     {% for key in keys %}
         <div class="form-group">
-        {% if loop.first %}
+        {% if key == 'id'%}
+        {# do nothing #}
+        {% elseif loop.first %}
             <a href="{{ ref_href }}">{{ name }}</a> --- 
         {% elseif not loop.last %}
             <label class="sr-only" for="{{ key }}">{{ key }}</label>

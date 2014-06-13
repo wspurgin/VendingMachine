@@ -1377,8 +1377,8 @@ Class Api
     public function getGroupPermissions($id, $json_request=true)
     {
         $app = \Slim\Slim::getInstance();
-        $sql = "SELECT g.`name` AS `group`, p.`description` AS `permission`
-        FROM `Groups` g
+        $sql = "SELECT g.`name` AS `group`, p.`description` AS `permission`,
+        p.`id` AS `id` FROM `Groups` g
         INNER JOIN `Group_Permissions` pg ON (g.`id`=pg.`group_id`)
         INNER JOIN `Permissions` p ON (pg.`permission_id`=p.`id`)
         WHERE g.`id`=:id";
@@ -1452,11 +1452,38 @@ Class Api
         echo json_encode($response);
     }
 
+    public function deleteGroupPermissions($id)
+    {
+        $app = \Slim\Slim::getInstance();
+        $sql = "DELETE FROM `Group_Permissions` WHERE `group_id`=:id AND `permission_id`=:p_id";
+        try
+        {
+            $body = $app->request->getBody();
+            $request = json_decode($body);
+
+            if(empty($request))
+                throw new Exception("Invalid JSON '$body'", 1);
+
+            $args = array(":id" => $id, ":p_id" => $request->id);
+            $this->db->delete($sql, $args);
+
+            $response['success'] = true;
+            $response['message'] = "Successfully deleted group's permission";
+        }
+        catch (Exception $e)
+        {
+            $response['success'] = false;
+            $response['message'] = $e->getMessage();
+        }
+        $app->contentType('application/json');
+        echo json_encode($response);
+    }
+
     public function getMachineSupplies($id, $json_request=true)
     {
         $app = \Slim\Slim::getInstance();
-        $sql = "SELECT m.`machine_location` AS `machine`, p.`name` AS `product`, ms.`quantity` AS `quantity`
-        FROM `Machines` m
+        $sql = "SELECT m.`machine_location` AS `machine`, p.`name` AS `product`,
+        p.`id` AS `id`, ms.`quantity` AS `quantity` FROM `Machines` m
         INNER JOIN `Machine_Supplies` ms ON (m.`id`=ms.`machine_id`)
         INNER JOIN `Products` p ON (ms.`product_id`=p.`id`)
         WHERE m.`id`=:id";
@@ -1528,7 +1555,7 @@ Class Api
     {
         $app = \Slim\Slim::getInstance();
         $sql = "UPDATE Machine_Supplies SET `quantity`=:quantity
-        WHERE `machine_id=:id AND `product_id`=:product";
+        WHERE `machine_id`=:id AND `product_id`=:product";
 
         try
         {
@@ -1555,11 +1582,40 @@ Class Api
         echo json_encode($response);
     }
 
+    public function deleteMachineSupplies($id)
+    {
+        $app = \Slim\Slim::getInstance();
+        $sql = "DELETE FROM `Machine_Supplies` WHERE `machine_id`=:id AND `product_id`=:p_id";
+
+        try
+        {
+            $body = $app->request->getBody();
+            $request = json_decode($body);
+
+            if(empty($request))
+                throw new Exception("Invalid JSON '$body'", 1);
+
+            $args[':p_id'] = $request->id;
+            $args[':id'] = $id;
+            $this->db->delete($sql, $args);
+
+            $response['success'] = true;
+            $response['message'] = 'Successfully deleted Machine\'s supplies';
+        }
+        catch (Exception $e)
+        {
+            $response['success'] = false;
+            $response['message'] = $e->getMessage();
+        }
+        $app->contentType('application/json');
+        echo json_encode($response);
+    }
+
     public function getUserPermissions($id, $json_request=false)
     {
         $app = \Slim\Slim::getInstance();
-        $sql = "SELECT u.`name` AS `user`, p.`description` AS `permission`
-        FROM `Users` u
+        $sql = "SELECT u.`name` AS `user`, p.`description` AS `permission`,
+        p.`id` AS `id` FROM `Users` u
         INNER JOIN `User_Permissions` up ON (u.`id`=up.`user_id`)
         INNER JOIN `Permissions` p ON (up.`permission_id`=p.`id`)
         WHERE u.`id`=:id";
@@ -1623,6 +1679,33 @@ Class Api
 
             $response['success'] = true;
             $response['message'] = count($permissions) . " permissions have benn added to User.";
+        }
+        catch (Exception $e)
+        {
+            $response['success'] = false;
+            $response['message'] = $e->getMessage();
+        }
+        $app->contentType('application/json');
+        echo json_encode($response);
+    }
+
+    public function deleteUserPermissions($id)
+    {
+        $app = \Slim\Slim::getInstance();
+        $sql = "DELETE FROM `User_Permissions` WHERE `user_id`=:id AND `permission_id`=:p_id";
+        try
+        {
+            $body = $app->request->getBody();
+            $request = json_decode($body);
+
+            if(empty($request))
+                throw new Exception("Invalid JSON '$body'", 1);
+
+            $args = array(":id" => $id, ":p_id" => $request->id);
+            $this->db->delete($sql, $args);
+
+            $response['success'] = true;
+            $response['message'] = "Successfully deleted user's permission";
         }
         catch (Exception $e)
         {

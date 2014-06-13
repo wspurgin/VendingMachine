@@ -7,7 +7,9 @@
                 <tr>
                 {% block form_head %}
                     {% for key in keys %}
-                        <th>{{ key }}</th>
+                        {% if key != 'id' %}
+                            <th>{{ key }}</th>
+                        {% endif %}
                     {% endfor %}
                     <th>Delete</th>
                 {% endblock %}
@@ -15,17 +17,17 @@
             </thead>
             <tbody>
                 {% for row in rows %} 
-                    <tr>
+                    <tr data-id="{{ row.id }}">
                     {% for data in row %} 
                             {% if loop.first %}
                                 <td><a href="{{ ref_href }}">{{ data }}</a></td>
-                            {% else %}
+                            {% elseif not loop.last %}
                                 <td>{{ data }}</td>
                             {% endif %}
                     {% endfor %}
                     {% block form_action_buttons %}
                     {# delete button #}
-                    <td><button class="btn btn-danger" id="delete_entry" data-href="{{ api_href }}">Delete</button></td>
+                    <td><button class="btn btn-danger" data-type="delete_entry" data-href="{{ href }}" data-api-href="{{ api_href }}">Delete</button></td>
                     {% endblock %}
                     </tr>
                 {% endfor %}
