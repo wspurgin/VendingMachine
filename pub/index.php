@@ -57,9 +57,6 @@ $app->get('/groups/:id', 'getGroup');
 $app->get('/permissions', 'getPermissions');
 $app->get('/permissions/:id', 'getPermission');
 
-// Group_Permissions Routes
-
-# TODO: what's the plan for references? Foreign Keys, just hyperlink?
 
 // Machine Routes
 $app->get('/machines', 'getMachines');
