@@ -59,4 +59,7 @@ $ROUTES = array(
     new Route('/api/teams/:id', Route::GET, array($api, 'getTeam')),
     new Route('/api/teams/:id', Route::PUT, array($api, 'updateTeam')),
     new Route('/api/teams/:id', Route::DELETE, array($api, 'deleteTeam')),
+
+    new Route('/api/login', Route::POST, array($api, 'loginUser')),
+    new Route('/api/logout', Route::GET, array($api, 'logoutUser'))
 );

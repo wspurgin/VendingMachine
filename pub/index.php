@@ -2,6 +2,7 @@
 
 require_once(__DIR__ . '/../vendor/autoload.php');
 require_once(__DIR__ . '/../lib/config.php');
+require_once(__DIR__ . '/../lib/common.php');
 
 
 session_cache_limiter(false);
@@ -110,6 +111,9 @@ function getGroups()
 {
     $app = \Slim\Slim::getInstance();
     global $api;
+
+    if (!Common::userHasPermission('change_groups'))
+        $app->halt(404);
     try
     {
         $groups = $api->getGroups(false);

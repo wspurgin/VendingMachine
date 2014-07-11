@@ -33,15 +33,12 @@ Class Api
         return clone $this;
     }
 
-    //Helper functions
-
-    // function for getting session (though disabling guest sessions)
-    // and validating the session.
-    public function session()
+    public function setSessionValidation($session_validation)
     {
-        // 'false' for disabling guest sessions
-        return _session($this->session_validation, false);
+        $this->session_validation = $session_validation;
     }
+
+    //Helper functions
 
     public function switchDbReturnType()
     {
@@ -49,8 +46,10 @@ Class Api
     }
 
     // This function requires that the session already has the user_id
-    private function loadSessionPermissions($reload=false)
+    private function loadSessionPermissions()
     {
+        $session = Session::currentSession();
+
         $sql = "SELECT DISTINCT(`code_name`) AS `code_name`
         FROM `Users` u
         INNER JOIN `Group_Permissions` gp
@@ -61,15 +60,21 @@ Class Api
         ON (up.`permission_id`=p.`id` OR gp.`permission_id`=p.`id`)
         WHERE u.`id`=:id";
 
-        if(!isset($_SESSION['permissions']) || $reload)
-        {
-            $permissions = $this->db->select(
-                $sql, array(":id" => $_SESSION['user_id'])
-            );
+        $permissions = $this->db->select(
+            $sql, array(":id" => $session['user_id'])
+        );
 
-            foreach ($permissions as $p)
-                $_SESSION['permissions'][$p['code_name']] = true;
-        }
+        /*
+        Note about the foreach loop below: While it's more natural to write
+        something like $session['permissions'][$p['code_name']] = true;
+        that will result in a PHP Indirect modification notice because
+        technically the Session object implements ArrayAccess which doesn't
+        return references to arrays. So we have to do it this way :/
+        */
+        $user_permissions = array();
+        foreach ($permissions as $p)
+            $user_permissions[$p['code_name']] = true;
+        $session['permissions'] = $user_permissions;
     }
 
     // function for getting the attribure names for a given relation in SQL
@@ -128,6 +133,8 @@ Class Api
     {
         $app = \Slim\Slim::getInstance();
         $response = array();
+        $app->contentType('application/json');
+
         try
         {
             $body = $app->request->getBody();
@@ -146,18 +153,18 @@ Class Api
                 throw new Exception("Invalid Credentials", 1);
             else
             {
-                $check = Password::check($user->password, $login->password);
+                $check = Password::check($login->password, $user['password']);
                 if(!$check)
                     throw new Exception("Invalid Credentials", 1);
                 else
                 {
                     // user authentication completed. Start session
-                    newSession(md5(SALT.$user->username));
-                    $_SESSION['user_id'] = $user->id;
-                    $_SESSION['name'] = $user->name;
-                    $this->loadSessionPermissions($user->id);
+                    $session = Session::createSession(md5(SALT.$user['email']));
+                    $session['user_id'] = $user['id'];
+                    $session['name'] = $user['name'];
+                    $this->loadSessionPermissions();
                     $response['success'] = true;
-                    $response['message'] = "$user->name logged in successfully";
+                    $response['message'] = $user['name'] . " logged in successfully";
                 }
             }
         }
@@ -174,7 +181,7 @@ Class Api
         {
             $response['success'] = false;
             $app->log->error($e->getMessage());
-            $response['message'] = $e->getMessage();
+            $response['message'] = $e->getMessage() . $e->getTraceAsString();
             
             // add message while debugging
             $app->halt(404, json_encode($response));
@@ -185,11 +192,12 @@ Class Api
     public function logoutUser()
     {
         $app = \Slim\Slim::getInstance();
-        if (!$this->session())
+        $app->contentType('application/json');
+        if (!Session::currentSession())
             $app->halt(404);
         try
         {
-            destroySession();
+            Session::destroySession();
             $response['success'] = true;
             $response['message'] = "User logged out.";
         }
