@@ -1,28 +1,36 @@
-<div class="sidebar-wrapper">
-    <ul class="sidebar-nav">
-        <li class="sidebar-brand">
-            <a class="sidebar-brand" href="/">Dashboard</a>
-        </li>
-        <li>
-            <a href="/groups">Groups</a>
-        </li>
-        <li>
-            <a href="/logs">Logs</a>
-        </li>
-        <li>
-            <a href="/machines">Machines</a>
-        </li>
-        <li>
-            <a href="/permissions">Permissions</a>
-        </li>
-        <li>
-            <a href="/products">Products</a>
-        </li>
-        <li>
-            <a href="/teams">Teams</a>
-        </li>
-        <li>
-            <a href="/users">Users</a>
-        </li>
-    </ul>
-</div>
+<!-- mp-menu -->
+<nav id="mp-menu" class="mp-menu">
+    <div class="mp-level">
+        <h2 class="icon icon-world">Menu</h2>
+        <ul>
+            {# Handle if login or logout is shown  #}
+            <li class="icon icon-arrow-left">
+                <a class="icon icon-display" href="#">Login/Logout</a>
+                {# show login form if login else nothing #}
+                <div class="mp-level">
+                    <h2 class="icon icon-display">Login</h2>
+                    <ul>
+
+                    </ul>
+                </div>
+            </li>
+            <li class="icon icon-arrow-left">
+                <a class="icon icon-news" href="#">Dashboards</a>
+                <div class="mp-level">
+                    <h2 class="icon icon-news">Dashboards</h2>
+                    <ul>
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/groups">Groups</a></li>
+                        <li><a href="#">Logs</a></li>
+                        <li><a href="#">Machines</a></li>
+                        <li><a href="#">Permissions</a></li>
+                        <li><a href="#">Products</a></li>
+                        <li><a href="#">Teams</a></li>
+                        <li><a href="#">Users</a></li>
+                    </ul>
+                </div>
+            </li>
+        </ul>
+    </div>
+</nav>
+<!-- /mp-menu -->

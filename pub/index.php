@@ -51,20 +51,20 @@ foreach ($ROUTES as $route) {
 }
 
 // Group Routes
-$app->get('/groups', 'getGroups');
+$app->get('/groups', 'getGroups')->name('groups');
 $app->get('/groups/:id', 'getGroup');
 
 // Permission Routes
-$app->get('/permissions', 'getPermissions');
+$app->get('/permissions', 'getPermissions')->name('permissions');
 $app->get('/permissions/:id', 'getPermission');
 
 
 // Machine Routes
-$app->get('/machines', 'getMachines');
+$app->get('/machines', 'getMachines')->name('machines');
 $app->get('/machines/:id', 'getMachine');
 
 // User Routes
-$app->get('/users', 'getUsers');
+$app->get('/users', 'getUsers')->name('users');
 $app->get('/users/:id', 'getUser');
 $app->get('/users/:id/change', function($id) use ($app) {
     $response['page_title'] = "Password change: ".$id;
@@ -73,15 +73,15 @@ $app->get('/users/:id/change', function($id) use ($app) {
 });
 
 // Product Routes
-$app->get('/products', 'getProducts');
+$app->get('/products', 'getProducts')->name('products');
 $app->get('/products/:id', 'getProduct');
 
 // Team Routes
-$app->get('/teams', 'getTeams');
+$app->get('/teams', 'getTeams')->name('teams');
 $app->get('/teams/:id', 'getTeam');
 
 // Team Routes
-$app->get('/logs', 'getLogs');
+$app->get('/logs', 'getLogs')->name('logs');
 $app->get('/logs/:id', 'getLog');
 
 
@@ -93,9 +93,37 @@ $app->get('/machines/:id/supplies', 'getMachineSupplies');
 // Home page route
 $app->get('/', function() use ($app) {
     $app->render('index.html', array('page_title' => "Home"));
-});
+})->name('home');
 
 $app->run();
+
+function render($template, $data=array())
+{
+    // grab the global app
+    global $app;
+
+    if (!is_array($data))
+    {
+        // transform $data to an array if possible.
+        try
+        {
+            $data = (array) $data;
+        }
+        catch (Exception $e) # data couldn't be converted to an array.
+        {
+            $data = array();
+        }
+    }
+
+    // Add Session to data.
+    global $session_validation;
+    $session = Session::currentSession($session_validation);
+    if ($session != false)
+    {
+        $data['user'] = $session;
+    }
+    $app->render($template, $data);
+}
 
 function renderErrors($message=NULL)
 {
@@ -104,7 +132,7 @@ function renderErrors($message=NULL)
     $app = \Slim\Slim::getInstance();
     $response['page_title'] = "Errors";
     $response['message'] = $message;
-    $app->render('error.html', $response);
+    render('error.html', $response);
 }
 
 function getGroups()
@@ -113,7 +141,7 @@ function getGroups()
     global $api;
 
     if (!Common::userHasPermission('change_groups'))
-        $app->halt(404);
+        $app->redirect($app->urlFor('home'));
     try
     {
         $groups = $api->getGroups(false);
@@ -133,7 +161,7 @@ function getGroups()
         }
         $response['href'] = $app->request->getUrl()."/groups";
         $response['api_href'] = $app->request->getUrl()."/api/groups";
-        $app->render('table.html', $response);
+        render('table.html', $response);
     }
     catch (Exception $e)
     {
@@ -146,6 +174,10 @@ function getGroup($id)
 {
     $app = \Slim\Slim::getInstance();
     global $api;
+
+    if (!Common::userHasPermission('change_groups'))
+        $app->redirect($app->urlFor('home'));
+
     try
     {
         $group = $api->getGroup($id, false);
@@ -195,7 +227,7 @@ function getPermissions()
         }
         $response['href'] = $app->request->getUrl()."/permissions";
         $response['api_href'] = $app->request->getUrl()."/api/permissions";
-        $app->render('table.html', $response);
+        render('table.html', $response);
     }
     catch(Exception $e)
     {

@@ -1,94 +1,214 @@
-/*
-* Taken from the work done by IronSummitMedia in the startbootstrap repository
-* https://github.com/IronSummitMedia/startbootstrap/blob/master/templates/css/simple-sidebar.css
+.footer {
+  position: relative;
+  height: 10%;
+  text-align: center;
+}
+
+.menu-button {
+  width: 3%;
+  height: 2%;
+  margin-left: 3%;
+  margin-top: 2%;
+}
+
+.menu-button a {
+  display: block;
+  margin-left: auto;
+  margin-right: auto
+}
+
+.menu-button p {
+  display: block;
+  margin-left: auto;
+  margin-right: auto
+}
+
+/* Multi-Level push menu additions 
+See Mary Lou in Codrops' Playground
+http://tympanus.net/codrops/2013/08/13/multi-level-push-menu/
+Where this implementation is taken from.
 */
-
-.wrapper {
-  padding-left: 250px;
-  height: 600px;
-  overflow-y: scroll;
-  transition: all 0.4s ease 0s;
+@import url(http://fonts.googleapis.com/css?family=Lato:300,400,700);
+@font-face {
+  font-weight: normal;
+  font-style: normal;
+  font-family: 'codropsicons';
+  src:url('../fonts/codropsicons/codropsicons.eot');
+  src:url('../fonts/codropsicons/codropsicons.eot?#iefix') format('embedded-opentype'),
+    url('../fonts/codropsicons/codropsicons.woff') format('woff'),
+    url('../fonts/codropsicons/codropsicons.ttf') format('truetype'),
+    url('../fonts/codropsicons/codropsicons.svg#codropsicons') format('svg');
 }
 
-.sidebar-wrapper {
-  margin-left: -250px;
-  left: 250px;
-  width: 250px;
-  background: #000;
-  position: fixed;
-  height: 100%;
-  overflow-y: auto;
-  z-index: 1000;
-  transition: all 0.4s ease 0s;
+body {
+  background: #fff;
+  color: #292929;
+  font-weight: 300;
+  font-family: 'Lato', Calibri, Arial, sans-serif;
 }
 
-.sidebar-nav {
+a {
+  text-decoration: none;
+  color: #292929;
+  outline: none;
+}
+
+a:hover, a:focus {
+  color: #292929;
+  outline: none;
+}
+
+/* Clearfix hack by Nicolas Gallagher: http://nicolasgallagher.com/micro-clearfix-hack/ */
+.clearfix:before,
+.clearfix:after {
+  display: table;
+  content: " ";
+}
+
+.clearfix:after {
+  clear: both;
+}
+
+.codrops-header,
+.codrops-top {
+  font-family: 'Lato', Arial, sans-serif;
+}
+
+.codrops-header {
+  margin: 0 auto;
+  padding: 2em;
+  background: rgba(0,0,0,0.01);
+  text-align: center;
+}
+
+.codrops-header h1 {
+  margin: 0;
+  font-weight: 300;
+  font-size: 2.625em;
+  line-height: 1.3;
+}
+
+.codrops-header span {
+  display: block;
+  padding: 0 0 0.6em 0.1em;
+  font-size: 60%;
+  opacity: 0.7;
+}
+
+@media screen and (max-width: 69em) {
+  .block {
+    float: none;
+    width: 100% !important;
+    padding: 1em;
+  }
+}
+
+@media screen and (max-width: 25em) {
+
+  body {
+    font-size: 80%;
+  }
+
+  .codrops-icon span {
+    display: none;
+  }
+
+}
+
+/*--------------------*/
+/* Circle pop */
+/*
+* Adapted from Codrop's Playground
+* Mary Lou's Arrow Navigation Style article.
+* http://tympanus.net/codrops/2014/05/28/arrow-navigation-styles/
+*/
+/*--------------------*/
+
+.circlepop {
+  width: 100px;
+  height: 20px;
+}
+
+.circlepop a {
+  width: 50px;
+  height: 50px;
+}
+
+.circlepop a::before {
   position: absolute;
   top: 0;
-  width: 250px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
+  left: 0;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: #e3e3e3;
+  content: '';
+  -webkit-transition: -webkit-transform 0.3s, opacity 0.3s;
+  transition: transform 0.3s, opacity 0.3s;
+  -webkit-transform: scale(0.9);
+  transform: scale(0.9);
 }
 
-.sidebar-nav li {
-  line-height: 40px;
-  text-indent: 20px;
-}
-
-.sidebar-nav li a {
-  color: #999999;
+.circlepop .icon-wrap {
+  position: relative;
   display: block;
-  text-decoration: none;
+  margin: 47% 0 0 10%;
+  width: 50%;
+  height: 4px;
+  font-size: 0px;
+  left: 16%;
+  background-color: #428bca;
+  transition: transform 0.3s, background-color 0.3s;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
-.sidebar-nav li a:hover {
-  color: #fff;
-  background: rgba(255,255,255,0.2);
-  text-decoration: none;
-}
-
-.sidebar-nav li a:active,
-.sidebar-nav li a:focus {
-  text-decoration: none;
-}
-
-.sidebar-nav > .sidebar-brand {
-  height: 65px;
-  line-height: 60px;
-  font-size: 18px;
-}
-
-.sidebar-nav > .sidebar-brand a {
-  color: #999999;
-}
-
-.sidebar-nav > .sidebar-brand a:hover {
-  color: #fff;
-  background: none;
-}
-
-.content-header {
-  height: 65px;
-  line-height: 65px;
-}
-
-.content-header h1 {
-  margin: 0;
-  margin-left: 20px;
-  line-height: 65px;
-  display: inline-block;
-}
-
-#footer {
-
-  margin-top: 20px;
+.circlepop .icon-wrap::before,
+.circlepop .icon-wrap::after {
   position: absolute;
-  bottom: 0;
   width: 100%;
-  padding-left: 250px;
+  height: 100%;
+  background: #428bca;
+  content: '';
+  -webkit-transition: -webkit-transform 0.3s, background-color 0.3s;
+  transition: transform 0.3s, background-color 0.3s;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
 
-  /* Set the fixed height of the footer here */
-  height: 60px;
-  background-color: #f5f5f5;
+.circlepop .icon-wrap::before {
+  -webkit-transform: translateY(-250%);
+  transform: translateY(-250%);
+}
+
+.circlepop .icon-wrap::after {
+  -webkit-transform: translateY(250%);
+  transform: translateY(250%);
+
+}
+
+.circlepop a:hover::before {
+  background: #d2cece;
+  -webkit-transform: scale(1);
+  transform: scale(1);
+}
+
+.circlepop a:hover .icon-wrap::before,
+.circlepop a:hover .icon-wrap::after {
+  background: #000;
+}
+
+.circlepop a:hover .icon-wrap::before {
+  -webkit-transform: translateY(-350%);
+  transform: translateY(-350%);
+}
+
+.circlepop a:hover .icon-wrap::after {
+  /*top: 50%;*/
+  -webkit-transform: translateY(350%);
+  transform: translateY(350%);
+}
+
+.circlepop a:hover .icon-wrap {
+  background-color: #000;
 }

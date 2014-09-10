@@ -1,34 +1,57 @@
 <!DOCTYPE html>
-<html>
+<html lang="en" class="no-js">
     <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         {% block head %}
             <link rel="stylesheet" href="/css/bootstrap.min.css" />
             <link rel="stylesheet" href="/css/bootstrap-select.min.css" />
             <link rel="stylesheet" href="/css/vending.css"/>
+            <link rel="stylesheet" type="text/css" href="css/normalize.css" />
+            <link rel="stylesheet" type="text/css" href="css/icons.css" />
+            <link rel="stylesheet" type="text/css" href="css/component.css" />
+            <script src="js/modernizr.custom.js"></script>
             <title>{% block title %}{{ page_title }} - Vending{% endblock %}</title>
         {% endblock %}
+        <meta name="description" content="Vending Machine Project Site" />
+        <meta name="keywords" content="SMU, innovation gym, vending machine, southern methodist university" />
+        <meta name="author" content="Will Spurgin" />
     </head>
     <body>
-        <div class="container">
-            <div class="wrapper">
+        <div class="vending-container">
+            <!-- Push Wrapper -->
+            <div class="mp-pusher" id="mp-pusher">
                 {% block nav %}
                     {% include "sidebar.html" %}
                 {% endblock %}
-                {% block page_header %}
-                <div class="content-header">
-                    <h1>{{ page_title }}</h1>
+                <div class="scroller">
+                    <div class="circlepop">
+                        <a href="#" id="trigger">
+                            <span class="icon-wrap"/>
+                                <span>Menu</span>
+                        </a>
+                    </div>
+                    <div class="scroller-inner">
+                        <div class="container">
+                            {% block page_header %}
+                            <div class="content-header">
+                                <h1>{{ page_title }}</h1>
+                            </div>
+                            {% endblock %}
+                            {% block content %}{% endblock %}
+                            <div id="push"></div>
+                            <div id="footer">
+                                {% block footer %}
+                                    <div class="footer">
+                                        <p class="text-muted">Developed by Will Spurgin, 2014 Vending Machine Project</p>
+                                    </div>
+                                {% endblock %}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                {% endblock %}
-                {% block content %}{% endblock %}
-                <div id="push"></div>
             </div>
-        </div>
-        <div id="footer">
-            {% block footer %}
-                <div class="container">
-                    <p class="text-muted">Developed by Will Spurgin, 2014 Vending Machine Project</p>
-                </div>
-            {% endblock %}
         </div>
     </body>
     {% block scripts %}
@@ -36,6 +59,11 @@
         <script src="/js/bootstrap.min.js"></script>
         <script src="/js/bootstrap-select.min.js"></script>
         <script src="/js/vending.js"></script>
-        <script type="text/javascript">$('select').selectpicker();</script>
+        <script src="js/classie.js"></script>
+        <script src="js/mlpushmenu.js"></script>
+        <script type="text/javascript">
+            new mlPushMenu( document.getElementById( 'mp-menu' ), document.getElementById( 'trigger' ) );
+            $('select').selectpicker();
+        </script>
     {% endblock %}
 </html>
