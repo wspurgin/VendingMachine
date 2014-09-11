@@ -32,7 +32,7 @@ Assuming that you have cloned the repo into the directory 'VendingMachine':
     cd VendingMachine
     mysql -u yourUser -p < vending.sql
 
-Ensure the DB is created by using something like phpMyAdmin, (or if your a OS X user, I highly recommend [Sequel Pro](http://www.sequelpro.com/)
+Ensure the DB is created by using something like phpMyAdmin, (or if your a OS X user, I highly recommend [Sequel Pro](http://www.sequelpro.com/))
 
 If none of those are options for you, you can check via the shell
 
