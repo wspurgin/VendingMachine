@@ -163,7 +163,7 @@ This allows the .htaccess file in the 'pub' directory to send the url through th
 
 You must also ensure the you are loading the Apache Module 'rewrite'.
 Depending on which OS you are using, the way to enable this Module differs.
-Again depending on you OS there are different ways to check if the rewrite module is enabled, but for most OSs this is a valid way to check your Apche Modules in the shell:
+Again depending on you OS there are different ways to check if the rewrite module is enabled, but for most OSs this is a valid way to check your Apache Modules in the shell:
 
     apachectl -M
 
@@ -175,6 +175,6 @@ There are work arounds if you run into issues using MAMP, or XXAMP.
 
 After you have ensured that you have completed all these steps and have Apache properly configured, go ahead and restart apache and get coding!
 
-Installation instructions Last Updated: 04/17/2014
+Installation instructions Last Updated: 09/10/2014
 
 Last Commit that Changed Installation process: 7501ede7d4ab58367b9198f3af9ae6c51ed041a6
