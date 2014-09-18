@@ -8,10 +8,10 @@
             <link rel="stylesheet" href="/css/bootstrap.min.css" />
             <link rel="stylesheet" href="/css/bootstrap-select.min.css" />
             <link rel="stylesheet" href="/css/vending.css"/>
-            <link rel="stylesheet" type="text/css" href="css/normalize.css" />
-            <link rel="stylesheet" type="text/css" href="css/icons.css" />
-            <link rel="stylesheet" type="text/css" href="css/component.css" />
-            <script src="js/modernizr.custom.js"></script>
+            <link rel="stylesheet" type="text/css" href="/css/normalize.css" />
+            <link rel="stylesheet" type="text/css" href="/css/icons.css" />
+            <link rel="stylesheet" type="text/css" href="/css/component.css" />
+            <script src="/js/modernizr.custom.js"></script>
             <title>{% block title %}{{ page_title }} - Vending{% endblock %}</title>
         {% endblock %}
         <meta name="description" content="Vending Machine Project Site" />
@@ -26,13 +26,12 @@
                     {% include "sidebar.html" %}
                 {% endblock %}
                 <div class="scroller">
-                    <div class="circlepop">
-                        <a href="#" id="trigger">
-                            <span class="icon-wrap"/>
-                                <span>Menu</span>
-                        </a>
-                    </div>
                     <div class="scroller-inner">
+                        <div class="menu-button">
+                            <a href="#" id="trigger">
+                                <img class="menu-icon" src="/fonts/menu-alt.svg" alt="Menu"/>
+                            </a>
+                        </div>
                         <div class="container">
                             {% block page_header %}
                             <div class="content-header">
@@ -59,8 +58,8 @@
         <script src="/js/bootstrap.min.js"></script>
         <script src="/js/bootstrap-select.min.js"></script>
         <script src="/js/vending.js"></script>
-        <script src="js/classie.js"></script>
-        <script src="js/mlpushmenu.js"></script>
+        <script src="/js/classie.js"></script>
+        <script src="/js/mlpushmenu.js"></script>
         <script type="text/javascript">
             new mlPushMenu( document.getElementById( 'mp-menu' ), document.getElementById( 'trigger' ) );
             $('select').selectpicker();

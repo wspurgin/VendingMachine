@@ -4,25 +4,6 @@
   text-align: center;
 }
 
-.menu-button {
-  width: 3%;
-  height: 2%;
-  margin-left: 3%;
-  margin-top: 2%;
-}
-
-.menu-button a {
-  display: block;
-  margin-left: auto;
-  margin-right: auto
-}
-
-.menu-button p {
-  display: block;
-  margin-left: auto;
-  margin-right: auto
-}
-
 /* Multi-Level push menu additions 
 See Mary Lou in Codrops' Playground
 http://tympanus.net/codrops/2013/08/13/multi-level-push-menu/
@@ -45,17 +26,6 @@ body {
   color: #292929;
   font-weight: 300;
   font-family: 'Lato', Calibri, Arial, sans-serif;
-}
-
-a {
-  text-decoration: none;
-  color: #292929;
-  outline: none;
-}
-
-a:hover, a:focus {
-  color: #292929;
-  outline: none;
 }
 
 /* Clearfix hack by Nicolas Gallagher: http://nicolasgallagher.com/micro-clearfix-hack/ */
@@ -124,91 +94,28 @@ a:hover, a:focus {
 */
 /*--------------------*/
 
-.circlepop {
-  width: 100px;
-  height: 20px;
+.menu-button {
+  width: 6.8%;
+  height: auto;
+  position: fixed;
 }
 
-.circlepop a {
-  width: 50px;
-  height: 50px;
-}
-
-.circlepop a::before {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  background: #e3e3e3;
-  content: '';
-  -webkit-transition: -webkit-transform 0.3s, opacity 0.3s;
-  transition: transform 0.3s, opacity 0.3s;
+.menu-button .menu-icon {
+  position: relative;
+  display: block;
+  margin: 10% 0 0 10%;
+  width: 50%;
+  height: 50%;
+  left: 16%;
+  fill: #428bca;
+  -webkit-transition: -webkit-transform 0.3s;
+  transition: transform 0.3s;
   -webkit-transform: scale(0.9);
   transform: scale(0.9);
 }
 
-.circlepop .icon-wrap {
-  position: relative;
-  display: block;
-  margin: 47% 0 0 10%;
-  width: 50%;
-  height: 4px;
-  font-size: 0px;
-  left: 16%;
-  background-color: #428bca;
-  transition: transform 0.3s, background-color 0.3s;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-}
 
-.circlepop .icon-wrap::before,
-.circlepop .icon-wrap::after {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background: #428bca;
-  content: '';
-  -webkit-transition: -webkit-transform 0.3s, background-color 0.3s;
-  transition: transform 0.3s, background-color 0.3s;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-}
-
-.circlepop .icon-wrap::before {
-  -webkit-transform: translateY(-250%);
-  transform: translateY(-250%);
-}
-
-.circlepop .icon-wrap::after {
-  -webkit-transform: translateY(250%);
-  transform: translateY(250%);
-
-}
-
-.circlepop a:hover::before {
-  background: #d2cece;
+.menu-button a:hover .menu-icon {
   -webkit-transform: scale(1);
   transform: scale(1);
-}
-
-.circlepop a:hover .icon-wrap::before,
-.circlepop a:hover .icon-wrap::after {
-  background: #000;
-}
-
-.circlepop a:hover .icon-wrap::before {
-  -webkit-transform: translateY(-350%);
-  transform: translateY(-350%);
-}
-
-.circlepop a:hover .icon-wrap::after {
-  /*top: 50%;*/
-  -webkit-transform: translateY(350%);
-  transform: translateY(350%);
-}
-
-.circlepop a:hover .icon-wrap {
-  background-color: #000;
 }

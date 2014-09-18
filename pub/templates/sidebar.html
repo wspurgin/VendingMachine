@@ -3,6 +3,9 @@
     <div class="mp-level">
         <h2 class="icon icon-world">Menu</h2>
         <ul>
+            <li class="icon icon-shack">
+                <a href="/">Home</a>
+            </li>
             {# Handle if login or logout is shown  #}
             <li class="icon icon-arrow-left">
                 <a class="icon icon-display" href="#">Login/Logout</a>
@@ -19,14 +22,13 @@
                 <div class="mp-level">
                     <h2 class="icon icon-news">Dashboards</h2>
                     <ul>
-                        <li><a href="/">Home</a></li>
-                        <li><a href="/groups">Groups</a></li>
-                        <li><a href="#">Logs</a></li>
-                        <li><a href="#">Machines</a></li>
-                        <li><a href="#">Permissions</a></li>
-                        <li><a href="#">Products</a></li>
-                        <li><a href="#">Teams</a></li>
-                        <li><a href="#">Users</a></li>
+                        <li><a href="{{ routes.groups }}">Groups</a></li>
+                        <li><a href="{{ routes.logs }}">Logs</a></li>
+                        <li><a href="{{ routes.machines }}">Machines</a></li>
+                        <li><a href="{{ routes.permissions }}">Permissions</a></li>
+                        <li><a href="{{ routes.products }}">Products</a></li>
+                        <li><a href="{{ routes.teams }}">Teams</a></li>
+                        <li><a href="{{ routes.users }}">Users</a></li>
                     </ul>
                 </div>
             </li>

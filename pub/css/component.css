@@ -66,6 +66,17 @@ html, body, .vending-container, .scroller {
 	transform: translate3d(-100%, 0, 0);
 }
 
+.mp-menu a {
+  text-decoration: none;
+  color: #292929;
+  outline: none;
+}
+
+.mp-menu a:hover, a:focus {
+  color: #292929;
+  outline: none;
+}
+
 .mp-level {
 	position: absolute;
 	top: 0;
