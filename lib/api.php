@@ -1,6 +1,6 @@
 <?
 /**
-* NightKnights Api Class
+* Vending Machine Api Class
 * 
 * @author Will Spurgin
 */
