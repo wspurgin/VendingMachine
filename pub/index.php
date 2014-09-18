@@ -89,10 +89,11 @@ $app->get('/logs/:id', 'getLog');
 $app->get('/groups/:id/permissions', 'getGroupPermissions');
 $app->get('/users/:id/permissions', 'getUserPermissions');
 $app->get('/machines/:id/supplies', 'getMachineSupplies');
+$app->get('/teams/:id/members', 'getTeamMembers');
 
 // Home page route
 $app->get('/', function() use ($app) {
-    $app->render('index.html', array('page_title' => "Home"));
+    render('index.html', array('page_title' => "Home"));
 })->name('home');
 
 $app->run();
@@ -122,6 +123,11 @@ function render($template, $data=array())
     {
         $data['user'] = $session;
     }
+    // Add named routes
+    $data['routes'] = array();
+    foreach ($app->router()->getNamedRoutes() as $route)
+        $data['routes'][$route->getName()] = $route->getPattern();
+    
     $app->render($template, $data);
 }
 
@@ -195,7 +201,7 @@ function getGroup($id)
             $response['many_names'] = array('permissions');
             $response['api_href'] = $app->request->getUrl()."/api/groups/".$id;
             
-            $app->render('individual.html', $response);
+            render('individual.html', $response);
         }
     }
     catch (Exception $e)
@@ -256,7 +262,7 @@ function getPermission($id)
             $response['href'] = $app->request->getUrl()."/permissions/".$id;
             $response['api_href'] = $app->request->getUrl()."/api/permissions/".$id;
             
-            $app->render('individual.html', $response);
+            render('individual.html', $response);
         }
     }
     catch (Exception $e)
@@ -289,7 +295,7 @@ function getMachines()
         }
         $response['href'] = $app->request->getUrl()."/machines";
         $response['api_href'] = $app->request->getUrl()."/api/machines";
-        $app->render('table.html', $response);
+        render('table.html', $response);
     }
     catch (Exception $e)
     {
@@ -319,7 +325,7 @@ function getMachine($id)
             $response['href'] = $app->request->getUrl()."/machines/".$id;
             $response['api_href'] = $app->request->getUrl()."/api/machines/".$id;
             
-            $app->render('individual.html', $response);
+            render('individual.html', $response);
         }
     }
     catch (Exception $e)
@@ -351,7 +357,7 @@ function getUsers()
         }
         $response['href'] = $app->request->getUrl()."/users";
         $response['api_href'] = $app->request->getUrl()."/api/users";
-        $app->render('table_user.html', $response);
+        render('table_user.html', $response);
     }
     catch (Exception $e)
     {
@@ -381,7 +387,7 @@ function getUser($id)
             $response['many_names'] = array('permissions');
             $response['api_href'] = $app->request->getUrl()."/api/users/".$id;
             
-            $app->render('individual.html', $response);
+            render('individual.html', $response);
         }
     }
     catch (Exception $e)
@@ -414,7 +420,7 @@ function getProducts()
         }
         $response['href'] = $app->request->getUrl()."/products";
         $response['api_href'] = $app->request->getUrl()."/api/products";
-        $app->render('table.html', $response);
+        render('table.html', $response);
     }
     catch (Exception $e)
     {
@@ -443,7 +449,7 @@ function getProduct($id)
             $response['href'] = $app->request->getUrl()."/products/".$id;
             $response['api_href'] = $app->request->getUrl()."/api/products/".$id;
             
-            $app->render('individual.html', $response);
+            render('individual.html', $response);
         }
     }
     catch (Exception $e)
@@ -476,14 +482,14 @@ function getTeams()
         }
         $response['href'] = $app->request->getUrl()."/teams";
         $response['api_href'] = $app->request->getUrl()."/api/teams";
-        $app->render('table.html', $response);
+        render('table.html', $response);
     }
     catch (Exception $e)
     {
         // while still debugging
         $response['page_title'] = "Errors";
         $response['message'] = $e->getMessage();
-        $app->render('error.html', $response);
+        render('error.html', $response);
     }
 }
 
@@ -505,9 +511,10 @@ function getTeam($id)
             $name = $team['team_name'];
             $response['page_title'] = "Teams: $name";
             $response['href'] = $app->request->getUrl()."/teams/".$id;
+            $response['many_names'] = array('members');
             $response['api_href'] = $app->request->getUrl()."/api/teams/".$id;
             
-            $app->render('individual.html', $response);
+            render('individual.html', $response);
         }
     }
     catch (Exception $e)
@@ -540,7 +547,7 @@ function getLogs()
         }
         $response['href'] = $app->request->getUrl()."/logs";
         $response['api_href'] = $app->request->getUrl()."/api/logs";
-        $app->render('table.html', $response);
+        render('table.html', $response);
     }
     catch (Exception $e)
     {
@@ -569,7 +576,7 @@ function getLog($id)
             $response['href'] = $app->request->getUrl()."/logs/".$id;
             $response['api_href'] = $app->request->getUrl()."/api/logs/".$id;
             
-            $app->render('individual.html', $response);
+            render('individual.html', $response);
         }
     }
     catch (Exception $e)
@@ -611,7 +618,7 @@ function getGroupPermissions($id)
         $response['ref_href'] = $app->request->getUrl()."/groups/$id";
         $response['href'] = $app->request->getUrl()."/groups/$id/permissions";
         $response['api_href'] = $app->request->getUrl()."/api/groups/$id/permissions";
-        $app->render('one_to_many.html', $response);
+        render('one_to_many.html', $response);
     }
     catch (Exception $e)
     {
@@ -653,7 +660,7 @@ function getUserPermissions($id)
         $response['ref_href'] = $app->request->getUrl()."/users/$id";
         $response['href'] = $app->request->getUrl()."/users/$id/permissions";
         $response['api_href'] = $app->request->getUrl()."/api/users/$id/permissions";
-        $app->render('one_to_many.html', $response);
+        render('one_to_many.html', $response);
     }
     catch (Exception $e)
     {
@@ -686,14 +693,55 @@ function getMachineSupplies($id)
             $response['rows'] = $machine_supplies;
             
             $name = $machine_supplies[0]['machine'];
-            $response['page_title'] = "Machine: $name - supplies";
+            $response['page_title'] = "Machine: $name - Supplies";
             $response['name'] = $name;
         }
         $response['many'] = $supplies;
         $response['ref_href'] = $app->request->getUrl()."/machines/$id";
         $response['href'] = $app->request->getUrl()."/machines/$id/supplies";
         $response['api_href'] = $app->request->getUrl()."/api/machines/$id/supplies";
-        $app->render('machine_supplies.html', $response);
+        render('machine_supplies.html', $response);
+    }
+    catch (Exception $e)
+    {
+        // while still debugging
+        renderErrors($e->getMessage());
+    }
+}
+
+function getTeamMembers($id)
+{
+    $app = \Slim\Slim::getInstance();
+    global $api;
+    try
+    {
+        list($team_members, $users) = $api->getTeamMembers(
+            $id,
+            false
+        );
+        
+        if(empty($team_members))
+        {
+            $response['page_title'] = "No Content";
+            # explicitly state key names (for now)
+            $response['keys'] = array('Team', 'Members');
+            $response['name'] = $api->getTeam($id, false)['team_name'];
+        }
+        else
+        {
+            $keys = array_keys((array)$team_members[0]); // keys from first row
+            $response['keys'] = $keys;
+            $response['rows'] = $team_members;
+
+            $name = $team_members[0]['team'];
+            $response['page_title'] = "Team: $name - Members";
+            $response['name'] = $name;
+        }
+        $response['many'] = $users;
+        $response['ref_href'] = $app->request->getUrl()."/teams/$id";
+        $response['href'] = $app->request->getUrl()."/teams/$id/members";
+        $response['api_href'] = $app->request->getUrl()."/api/teams/$id/members";
+        render('one_to_many.html', $response);
     }
     catch (Exception $e)
     {

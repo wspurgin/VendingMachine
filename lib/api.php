@@ -1619,13 +1619,17 @@ Class Api
         echo json_encode($response);
     }
 
-    public function getUserPermissions($id, $json_request=false)
+    public function getUserPermissions($id, $json_request=true)
     {
         $app = \Slim\Slim::getInstance();
-        $sql = "SELECT u.`name` AS `user`, p.`description` AS `permission`,
-        p.`id` AS `id` FROM `Users` u
-        INNER JOIN `User_Permissions` up ON (u.`id`=up.`user_id`)
-        INNER JOIN `Permissions` p ON (up.`permission_id`=p.`id`)
+        $sql = "SELECT DISTINCT u.`name` AS `user`, p.`description` AS `permission`, p.`id` AS `id` 
+        FROM `Users` u
+        INNER JOIN `Group_Permissions` gp
+        ON (u.`group_id`=gp.`group_id`)
+        LEFT JOIN `User_Permissions` up
+        ON (u.`id`=up.`user_id`)
+        INNER JOIN `Permissions` p
+        ON (up.`permission_id`=p.`id` OR gp.`permission_id`=p.`id`)
         WHERE u.`id`=:id";
 
         try
@@ -1714,6 +1718,113 @@ Class Api
 
             $response['success'] = true;
             $response['message'] = "Successfully deleted user's permission";
+        }
+        catch (Exception $e)
+        {
+            $response['success'] = false;
+            $response['message'] = $e->getMessage();
+        }
+        $app->contentType('application/json');
+        echo json_encode($response);
+    }
+
+    public function getTeamMembers($id, $json_request=true)
+    {
+        $app = \Slim\Slim::getInstance();
+        $sql = "SELECT t.`team_name` AS `team`, u.`name` AS `member`, u.`id`AS `id`
+        FROM `Teams` t
+        INNER JOIN `Team_Members` tm
+        ON (t.`id`=tm.`team_id`)
+        INNER JOIN `Users` u
+        ON (tm.`user_id`=u.`id`)
+        WHERE t.`id`=:id";
+        
+       try
+       {
+           $team_memebers = $this->db->select($sql, array(":id" => $id));
+
+           if ($json_request)
+            {
+                $app->contentType('application/json');
+                echo json_encode($team_memebers);
+            }
+            else
+            {
+                // provide the users in 'many' form
+                $users = $this->db->select("SELECT `id` AS `value`,
+                    `name` FROM `Users`");
+                return array($team_memebers, $users);
+            }
+       }
+       catch (Exception $e)
+       {
+           if($json_request)
+            {
+                // while still debugging
+                $response['message'] = $e->getMessage();
+                $app->contentType('application/json');
+                echo json_encode($response);
+            }
+            else
+                throw $e;
+       }   
+    }
+
+    public function addTeamMembers($id)
+    {
+        $app = \Slim\Slim::getInstance();
+        $sql = "INSERT INTO Team_Members (`team_id`, `user_id`)
+        VALUES";
+        try
+        {
+            $body = $app->request->getBody();
+            $request = json_decode($body);
+
+            if(empty($request))
+                throw new Exception("Invalid JSON '$body'", 1);
+
+            $users = $request->member;
+            foreach ($users as $key => $user)
+            {
+                end($users);
+                if($key === key($users))
+                    $sql .= " (:id_$key, :$key)";    
+                else
+                    $sql .= " (:id_$key, :$key),";
+                $args[":$key"] = $user;
+                $args[":id_$key"] = $id;
+            }
+            $this->db->insert($sql, $args);
+
+            $response['success'] = true;
+            $response['message'] = count($users) . " users have benn added to Team.";
+        }
+        catch (Exception $e)
+        {
+            $response['success'] = false;
+            $response['message'] = $e->getMessage();
+        }
+        $app->contentType('application/json');
+        echo json_encode($response);
+    }
+
+    public function deleteTeamMembers($id)
+    {
+        $app = \Slim\Slim::getInstance();
+        $sql = "DELETE FROM `Team_Members` WHERE `team_id`=:id AND `user_id`=:u_id";
+        try
+        {
+            $body = $app->request->getBody();
+            $request = json_decode($body);
+
+            if(empty($request))
+                throw new Exception("Invalid JSON '$body'", 1);
+
+            $args = array(":id" => $id, ":u_id" => $request->id);
+            $this->db->delete($sql, $args);
+            
+            $response['success'] = true;
+            $response['message'] = "Successfully deleted member from team";
         }
         catch (Exception $e)
         {
