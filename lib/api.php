@@ -81,6 +81,7 @@ Class Api
     public function getRelationKeys($relation)
     {
         $dbname = DB_NAME;
+        $relation = ucfirst($relation);
 
         $sql = "SELECT `COLUMN_NAME` 
         FROM `INFORMATION_SCHEMA`.`COLUMNS` 
@@ -90,7 +91,6 @@ Class Api
         try
         {
             $col_names = $this->db->select($sql);
-
             foreach ($col_names as $col)
                 $keys[] = $col['COLUMN_NAME'];
             return $keys;
