@@ -3,8 +3,8 @@
     <div class="mp-level">
         <h2 class="icon icon-world">Menu</h2>
         <ul>
-            <li class="icon icon-shack">
-                <a href="/">Home</a>
+            <li>
+                <a class="icon icon-shop" href="/">Home</a>
             </li>
             {# Handle if login or logout is shown  #}
             <li class="icon icon-arrow-left">
@@ -17,21 +17,15 @@
                     </ul>
                 </div>
             </li>
-            <li class="icon icon-arrow-left">
-                <a class="icon icon-news" href="#">Dashboards</a>
-                <div class="mp-level">
-                    <h2 class="icon icon-news">Dashboards</h2>
-                    <ul>
-                        <li><a href="{{ routes.groups }}">Groups</a></li>
-                        <li><a href="{{ routes.logs }}">Logs</a></li>
-                        <li><a href="{{ routes.machines }}">Machines</a></li>
-                        <li><a href="{{ routes.permissions }}">Permissions</a></li>
-                        <li><a href="{{ routes.products }}">Products</a></li>
-                        <li><a href="{{ routes.teams }}">Teams</a></li>
-                        <li><a href="{{ routes.users }}">Users</a></li>
-                    </ul>
-                </div>
-            </li>
+            {# Show dashboards if they have permission to see any of them #}
+            <h3>Dashboards</h3>
+            <li><a class="icon icon-data" href="{{ routes.groups }}">Groups</a></li>
+            <li><a class="icon icon-note" href="{{ routes.logs }}">Logs</a></li>
+            <li><a class="icon icon-settings" href="{{ routes.machines }}">Machines</a></li>
+            <li><a class="icon icon-key" href="{{ routes.permissions }}">Permissions</a></li>
+            <li><a class="icon icon-tag" href="{{ routes.products }}">Products</a></li>
+            <li><a class="icon icon-study" href="{{ routes.teams }}">Teams</a></li>
+            <li><a class="icon icon-user" href="{{ routes.users }}">Users</a></li>
         </ul>
     </div>
 </nav>

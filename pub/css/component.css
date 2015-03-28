@@ -79,6 +79,7 @@ html, body, .vending-container, .scroller {
 
 .mp-level {
 	position: absolute;
+	overflow-y: auto;
 	top: 0;
 	left: 0;
 	width: 100%;
@@ -188,6 +189,18 @@ html, body, .vending-container, .scroller {
 	text-shadow: 0 0 1px rgba(0,0,0,0.1);
 	font-weight: 300;
 	font-size: 2em;
+}
+
+.mp-menu h3 {
+	margin: 0;
+	padding-top: 1em;
+	padding-bottom: 1em;
+	padding-right: 2em;
+	padding-left: 2em; 
+	color: rgba(0,0,0,0.4);
+	text-shadow: 0 0 1px rgba(0,0,0,0.1);
+	font-weight: 300;
+	font-size: 1.5em;
 }
 
 .mp-menu.mp-overlap h2::before {
