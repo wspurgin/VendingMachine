@@ -751,7 +751,10 @@ Class Api
     public function getUser($id, $json_request=true)
     {
         $app = \Slim\Slim::getInstance();
-        $sql = "SELECT * FROM `Users` WHERE id=:id";
+        $sql = "SELECT `id`, `name`, `email`, `group_id`, `balance`
+                    FROM `Users` WHERE id=:id";
+        if (!$json_request) # for our internal use we'll want everything
+            $sql = "SELECT * FROM `Users` WHERE id=:id";
         try
         {
             $user = $this->db->select($sql, array(":id" => $id), false);
