@@ -145,6 +145,7 @@ However the contents of the vhost can be quite simple. Here is an example vhost 
         AllowOverride All
         Order Allow,Deny
         Allow from All
+        Require all granted
     </Directory>
 
 
