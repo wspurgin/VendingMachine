@@ -174,7 +174,7 @@ Class Api
             $app->log->error($e->getMessage());
             $response['message'] = $e->getMessage();
 
-            $app->halt(404, json_encode($response));
+            $app->halt(500, json_encode($response));
 
         }
         catch(Exception $e)
@@ -184,7 +184,7 @@ Class Api
             $response['message'] = $e->getMessage() . $e->getTraceAsString();
             
             // add message while debugging
-            $app->halt(404, json_encode($response));
+            $app->halt(500, json_encode($response));
         }
         echo json_encode($response);
     }
