@@ -1,6 +1,6 @@
 <?php
 
-/** 
+/**
 * Session represented in object form for friendly and easy interaction.
 * @author Will Spurign
 */

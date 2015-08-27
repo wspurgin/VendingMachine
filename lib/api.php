@@ -1,4 +1,4 @@
-<?
+<?php
 /**
 * Vending Machine Api Class
 * 
