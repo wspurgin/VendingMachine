@@ -10,6 +10,7 @@ class CreateDatabase < ActiveRecord::Migration
 
     create_table "groups", force: :cascade do |t|
       t.string "name", limit: 30, null: false
+      t.timestamps
     end
 
     create_table "logs", force: :cascade do |t|
@@ -17,6 +18,7 @@ class CreateDatabase < ActiveRecord::Migration
       t.integer "product_id",     limit: 4, null: false
       t.integer "machine_id",     limit: 4, null: false
       t.date    "date_purchased"
+      t.timestamps
     end
 
     add_index "logs", ["machine_id"], name: "machine_id", using: :btree
@@ -27,6 +29,7 @@ class CreateDatabase < ActiveRecord::Migration
       t.integer "machine_id", limit: 4,             null: false
       t.integer "product_id", limit: 4,             null: false
       t.integer "quantity",   limit: 4, default: 0, null: false
+      t.timestamps
     end
 
     add_index "machine_supplies", ["machine_id"], name: "machine_id", using: :btree
@@ -34,11 +37,13 @@ class CreateDatabase < ActiveRecord::Migration
 
     create_table "machines", force: :cascade do |t|
       t.string "machine_location", limit: 30, null: false
+      t.timestamps
     end
 
     create_table "permissions", force: :cascade do |t|
       t.string "description", limit: 80, null: false
       t.string "code_name",   limit: 20, null: false
+      t.timestamps
     end
 
     create_table "products", force: :cascade do |t|
@@ -46,6 +51,7 @@ class CreateDatabase < ActiveRecord::Migration
       t.string "name",   limit: 50,                null: false
       t.string "vendor", limit: 30,                null: false
       t.float  "cost",   limit: 53,  default: 0.0, null: false
+      t.timestamps
     end
 
     create_table "team_members", id: false, force: :cascade do |t|
@@ -61,6 +67,7 @@ class CreateDatabase < ActiveRecord::Migration
       t.string "class",           limit: 30,               null: false
       t.date   "expiration_date",                          null: false
       t.float  "team_balance",    limit: 53, default: 0.0, null: false
+      t.timestamps
     end
 
     create_table "user_permissions", id: false, force: :cascade do |t|
@@ -78,6 +85,7 @@ class CreateDatabase < ActiveRecord::Migration
       t.string  "email",    limit: 64,                null: false
       t.integer "group_id", limit: 4,                 null: false
       t.float   "balance",  limit: 53,  default: 0.0, null: false
+      t.timestamps
     end
 
     add_index "users", ["group_id"], name: "group", using: :btree
