@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150827171628) do
+ActiveRecord::Schema.define(version: 20150829163135) do
 
   create_table "group_permissions", id: false, force: :cascade do |t|
     t.integer "group_id",      limit: 4, default: 0, null: false
@@ -99,18 +99,18 @@ ActiveRecord::Schema.define(version: 20150827171628) do
   add_index "user_permissions", ["user_id"], name: "user_id", using: :btree
 
   create_table "users", force: :cascade do |t|
-    t.string   "smu_id",     limit: 32,                null: false
-    t.string   "password",   limit: 128,               null: false
-    t.string   "name",       limit: 30,                null: false
-    t.string   "email",      limit: 64,                null: false
-    t.integer  "group_id",   limit: 4,                 null: false
-    t.float    "balance",    limit: 53,  default: 0.0, null: false
+    t.string   "smu_id",          limit: 32,                null: false
+    t.string   "password_digest", limit: 128,               null: false
+    t.string   "name",            limit: 30,                null: false
+    t.string   "email",           limit: 64,                null: false
+    t.integer  "group_id",        limit: 4,                 null: false
+    t.float    "balance",         limit: 53,  default: 0.0, null: false
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
   add_index "users", ["group_id"], name: "group", using: :btree
-  add_index "users", ["smu_id"], name: "smu_id", using: :btree
+  add_index "users", ["smu_id"], name: "index_users_on_smu_id", unique: true, using: :btree
 
   add_foreign_key "group_permissions", "groups", name: "group_permission_fk_group", on_update: :cascade, on_delete: :cascade
   add_foreign_key "group_permissions", "permissions", name: "group_permission_fk_permission", on_update: :cascade, on_delete: :cascade
