@@ -1,14 +1,33 @@
+<% page_title ||= "Vending Machine" %>
 <!DOCTYPE html>
 <html>
-<head>
-  <title>VendingMachine</title>
-  <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
-  <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
-  <%= csrf_meta_tags %>
-</head>
-<body>
+  <head>
+    <title>VendingMachine</title>
+    <%= stylesheet_link_tag    'application', media: 'all', 'data-turbolinks-track' => true %>
+    <%= javascript_include_tag 'application', 'data-turbolinks-track' => true %>
+    <%= csrf_meta_tags %>
+  </head>
+  <body>
 
-<%= yield %>
-
-</body>
+    <div id="vending-container" class="vending-container">
+      <div class="mp-pusher" id="mp-pusher">
+          <%= render "shared/menu" %>
+          <div class="scroller">
+            <div class="scroller-inner">
+              <div class="menu-button">
+                <a href="#" id="trigger">
+                  <img class="menu-icon" src="<%= image_url("menu-alt.svg") %>" alt="Menu"/>
+                </a>
+              </div>
+              <div id="main-content" class="container">
+                <div class="content-header">
+                  <h1><%= page_title %></h1>
+                </div>
+                <%= yield %>
+              </div>
+            </div>
+          </div>
+      </div>
+    </div>
+  </body>
 </html>
